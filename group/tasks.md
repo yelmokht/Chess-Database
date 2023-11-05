@@ -7,25 +7,25 @@
 => Implementing the two data types (10 points). Favor an internal representation which optimizes the storage space, without jeopardizing the query time.
 
 ## Functions (10 points)
-1. **getBoard(chessgame, integer) -> chessboard:**
+- **getBoard(chessgame, integer) -> chessboard:**
    - Returns the board state at a given half-move.
    - Integer parameter indicates the count of half moves since the beginning.
 
-2. **getFirstMoves(chessgame, integer) -> chessgame:**
+- **getFirstMoves(chessgame, integer) -> chessgame:**
    - Returns the chessgame truncated to its first N half-moves.
    - Integer parameter is zero-based.
 
-3. **hasOpening(chessgame, chessgame) -> bool:**
+- **hasOpening(chessgame, chessgame) -> bool:**
    - Returns true if the first chess game starts with the exact set of moves as the second chess game.
 
-4. **hasBoard(chessgame, chessboard, integer) -> bool:**
+- **hasBoard(chessgame, chessboard, integer) -> bool:**
    - Returns true if the chessgame contains the given board state in its first N half-moves.
 
 ## Indexes (20 points)
-1. **Index for hasOpening:**
+- **Index for hasOpening:**
    - Implemented using a B-tree for total order property.
 
-2. **Index for hasBoard:**
+- **Index for hasBoard:**
    - Implemented using GIN index to support indexing individual states per chessgame.
 
 =>  Favor implementations that minimize the false positives of the index query. Optimally the predicates will be answered by an index-only scan, i.e., without needing to actually execute the predicate on the tuples that the index returns. Also favor implementations that make the index access transparent to user queries. In other words, it shouldn’t be the case that the user needs to change her query in order to make use of the index.
