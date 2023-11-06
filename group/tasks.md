@@ -1,12 +1,12 @@
 # 1. Source code of the extension in C
 
-## Data Types (10 points)
+## Data Types (10 points) (chess.h)
 - **chessgame:** Represents a chess game using SAN notation.
 - **chessboard:** Represents a chess board state using FEN notation.
 
 => Implementing the two data types (10 points). Favor an internal representation which optimizes the storage space, without jeopardizing the query time.
 
-## Functions (10 points)
+## Functions (10 points) (chess.c)
 - **getBoard(chessgame, integer) -> chessboard:**
    - Returns the board state at a given half-move.
    - Integer parameter indicates the count of half moves since the beginning.
@@ -21,7 +21,7 @@
 - **hasBoard(chessgame, chessboard, integer) -> bool:**
    - Returns true if the chessgame contains the given board state in its first N half-moves.
 
-## Indexes (20 points)
+## Indexes (20 points) (chess_btree.c)
 - **Index for hasOpening:**
    - Implemented using a B-tree for total order property.
 
@@ -30,7 +30,7 @@
 
 =>  Favor implementations that minimize the false positives of the index query. Optimally the predicates will be answered by an index-only scan, i.e., without needing to actually execute the predicate on the tuples that the index returns. Also favor implementations that make the index access transparent to user queries. In other words, it shouldn’t be the case that the user needs to change her query in order to make use of the index.
 
-# 2. SQL file for testing the extension
+# 2. SQL file for testing the extension (chess--1.0.sql)
 Along with the query plans and short snippets of the results that you obtained during your tests.
 
 # 3. Presentation
