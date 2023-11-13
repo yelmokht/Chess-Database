@@ -3,6 +3,8 @@
     "files.associations": {
         "stdlib.h": "c",
         "float.h": "c",
-        "chess.h": "c"
+        "chess.h": "c",
+        "postgres.h": "c",
+        "builtins.h": "c"
     }
 }

@@ -1,6 +1,6 @@
 #include "chess.h"
 
-void main() {
+int main() {
     FEN_parsing(STARTING_POSITION);
     //print_chessboard(chessboard);
 }
