@@ -3,10 +3,11 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "/usr/include/postgresql/14/server"
             ],
             "defines": [],
-            "compilerPath": "/usr/bin/gcc",
+            "compilerPath": "/usr/bin/gcc-11",
             "cStandard": "c17",
             "cppStandard": "c++98",
             "intelliSenseMode": "linux-gcc-x64"
