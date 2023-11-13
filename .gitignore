@@ -1,0 +1,13 @@
+# Ignore VSCode files
+.vscode/
+.idea/
+
+# Ignore compiled files
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+*.o
