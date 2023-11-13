@@ -39,12 +39,12 @@ static chessboard_t * chessboard_make(char *piece_placement_data, char active_co
 chessboard_t * FEN_parsing(const char* fen) {
   char *token = strtok(fen, ' ');
   char *list[6];
-  int index = 1;
+  int index = 0;
 
   while(token != NULL) {
     printf(" %s\n", token);
     list[index] = token;
-    token = strtok(NULL, fen);
+    token = strtok(NULL, ' ');
     index += 1;
   }
 
