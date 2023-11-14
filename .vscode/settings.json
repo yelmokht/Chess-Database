@@ -5,6 +5,7 @@
         "float.h": "c",
         "chess.h": "c",
         "postgres.h": "c",
-        "builtins.h": "c"
+        "builtins.h": "c",
+        "math.h": "c"
     }
 }

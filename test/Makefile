@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-lpq -I /usr/include/postgresql/14/server
+CFLAGS=-I /usr/include/postgresql/14/server
 
 
 test:
