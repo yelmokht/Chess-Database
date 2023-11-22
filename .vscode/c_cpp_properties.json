@@ -4,7 +4,7 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/Applications/Postgres.app/Contents/Versions/16/include/postgresql/server"
+                "/Library/PostgreSQL/16/include/postgresql/server"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc-11",
