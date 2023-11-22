@@ -1,5 +1,5 @@
 /*
- * chess.C 
+ * chess.c
  *
  * PostgreSQL Chess
  *
@@ -10,6 +10,7 @@
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include "utils/builtins.h"
 #include "libpq/pqformat.h"
 #include "chess.h"
@@ -26,7 +27,7 @@ PG_MODULE_MAGIC;
  * @param fullmove_clock
  */
 static chessboard_t * chessboard_make(char *piece_placement_data, char active_color, char *castling_availability, char *en_passant_target_square, int halfmove_clock, int fullmove_clock) {
-  chessboard_t *chessboard = (chessboard_t *)palloc(sizeof(chessboard_t));
+  chessboard_t *chessboard = (chessboard_t *)malloc(sizeof(chessboard_t));
   strcpy(chessboard->piece_placement_data, piece_placement_data);
   chessboard->active_color = active_color;
   strcpy(chessboard->castling_availability, castling_availability);
@@ -36,24 +37,23 @@ static chessboard_t * chessboard_make(char *piece_placement_data, char active_co
   return chessboard;
 }
 
-chessboard_t * FEN_parsing(const char* fen) {
-  char *token = strtok(fen, ' ');
+static chessboard_t * FEN_parsing(char* fen) {
+  char *token = strtok(fen, " ");
   char *list[6];
   int index = 0;
 
   while(token != NULL) {
-    printf(" %s\n", token);
     list[index] = token;
-    token = strtok(NULL, ' ');
+    token = strtok(NULL, " ");
     index += 1;
   }
 
-  return chessboard_make(list[0], list[1], list[2], list[3], atoi(list[4]), atoi(list[5]));
+  return chessboard_make(list[0], *list[1], list[2], list[3], atoi(list[4]), atoi(list[5]));
 }
 
 void print_chessboard(chessboard_t *chessboard) {
   printf("Piece placement data : %s", chessboard->piece_placement_data);
-  printf("Active color : %s", chessboard->active_color);
+  printf("Active color : %d", chessboard->active_color);
   printf("Castling availability : %s", chessboard->castling_availability);
   printf("En passant target square : %s", chessboard->en_passant_target_square);
   printf("Halfmove clock : %d", chessboard->halfmove_clock);
