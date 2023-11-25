@@ -113,7 +113,8 @@ getBoard(PG_FUNCTION_ARGS)
   char *fen;
   SCL_boardToFEN(board, fen); //vérifer boolean
   chessboard_t *chessboard = FEN_to_chessboard(fen);
-  PG_RETURN_CHESSBOARD_P(chessboard); //Don"t forget to free SCL structures
+  PG_FREE_IF_COPY(chessgame, 0); //Free SCL structures ?
+  PG_RETURN_CHESSBOARD_P(chessboard);
 }
 
 /**
@@ -148,6 +149,7 @@ getFirstMoves(PG_FUNCTION_ARGS)
   SCL_Board initialState = SCL_boardFromFEN(STARTING_POSITION);
   SCL_printPGN(record, putCharFunc, initialState);
   chessgame_t *new_chessgame = PGN_to_chessgame(putCharFunc); // new chessgame or chessgame ?
+  PG_FREE_IF_COPY(chessgame, 0); //Free SCL structures ?
   PG_RETURN_CHESSGAME_P(new_chessgame)
 }
 
@@ -164,7 +166,10 @@ hasOpening(PG_FUNCTION_ARGS)
 {
   chessgame_t *chessgame_1 = PG_GETARG_CHESSGAME_P(0);
   chessgame_t *chessgame_2 = PG_GETARG_CHESSGAME_P(1);
-  PG_RETURN_BOOL(strcmp(chessgame_1->pgn, chessgame_2->pgn) == 0);
+  bool hasOpening = strcmp(chessgame_1->pgn, chessgame_2->pgn);
+  PG_FREE_IF_COPY(chessgame_1, 0);
+  PG_FREE_IF_COPY(chessgame_2, 1);
+  PG_RETURN_BOOL(hasOpening == 0);
 }
 
 /**
@@ -183,5 +188,8 @@ hasBoard(PG_FUNCTION_ARGS)
   chessboard_t *chessboard = PG_GETARG_CHESSBOARD_P(1);
   uint16_t number_half_moves = PG_GETARG_INT16(2);
   chessboard_t *chessboard_of_chessgame = getBoard(chessgame, number_half_moves);
-  PG_RETURN_BOOL(strcmp(chessboard_of_chessgame->piece_placement_data, chessboard->piece_placement_data) == 0);
+  bool hasBoard = strcmp(chessboard_of_chessgame->piece_placement_data, chessboard->piece_placement_data);
+  PG_FREE_IF_COPY(chessgame, 0);
+  PG_FREE_IF_COPY(chessboard, 1);
+  PG_RETURN_BOOL(hasBoard == 0);
 }
