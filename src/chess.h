@@ -1,14 +1,7 @@
 #ifndef _CHESS_H
 #define _CHESS_H
 
-#include <postgres.h>
-
-#define STARTING_POSITION "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-#define STARTING_ACTIVE_COLOR 'w'
-#define STARTING_CASTLING_AVAILABILITY "KQkq"
-#define STARTING_EN_PASSANT_TARGET '-'
-#define STARTING_HALFMOVE_CLOCK 0
-#define STARTING_FULLMOVE_CLOCK 1
+#define MAX_PGN_LENGTH 4096
 
 /**
  * @brief Structure containing all information representing a chess game state using SAN notation.
@@ -31,8 +24,8 @@ typedef struct {
   char active_color;
   char *castling_availability;
   char *en_passant_target_square;
-  int halfmove_clock;
-  int fullmove_clock;
+  uint16_t halfmove_clock;
+  uint16_t fullmove_clock;
 } chessboard_t;
 
 /* fmgr macros chessboard type */
@@ -42,9 +35,10 @@ typedef struct {
 #define PG_RETURN_CHESSBOARD_P(x) return ChessboardPGetDatum(x)
 
 static chessgame_t *chessgame_make(char *san);
-static chessboard_t *chessboard_make(char *piece_placement_data, char active_color, char *castling_availability, char *en_passant_target_square, int halfmove_clock, int fullmove_clock);
+static chessboard_t *chessboard_make(char *piece_placement_data, char active_color, char *castling_availability, char *en_passant_target_square, uint16_t halfmove_clock, uint16_t fullmove_clock);
 
-static chessgame_t *PGN_to_chessgame(char *pgn) 
+static void truncate_chessgame(char *truncated_pgn, char *pgn, uint16_t number_half_moves);
+static chessgame_t *PGN_to_chessgame(char *pgn);
 static chessboard_t *FEN_to_chessboard(char* fen);
 
 #endif

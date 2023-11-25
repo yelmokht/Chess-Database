@@ -26,8 +26,11 @@ PG_MODULE_MAGIC;
  * @param pgn PGN notation of the chessgame
  * @return *chessgame_t Pointer to the chessgame
  */
-static chessgame_t *chessgame_make(const char *pgn) {
+static chessgame_t
+*chessgame_make(const char *pgn)
+{
   chessgame_t *chessgame = palloc0(sizeof(chessgame_t));
+  chessgame->pgn = (char *)malloc(sizeof(char) * strlen(pgn) + 1);
   strcpy(chessgame->pgn, pgn);
   return chessgame;
 }
@@ -43,11 +46,16 @@ static chessgame_t *chessgame_make(const char *pgn) {
  * @param fullmove_clock Fullmove clock
  * @return *chessboard_t Pointer to the chessboard
  */
-static chessboard_t *chessboard_make(char *piece_placement_data, char active_color, char *castling_availability, char *en_passant_target_square, int halfmove_clock, int fullmove_clock) {
-  chessboard_t *chessboard = (chessboard_t *)malloc(sizeof(chessboard_t));
+static chessboard_t 
+*chessboard_make(char *piece_placement_data, char active_color, char *castling_availability, char *en_passant_target_square, uint16_t halfmove_clock, uint16_t fullmove_clock)
+{
+  chessboard_t *chessboard = palloc0(sizeof(chessboard_t));
+  chessboard->piece_placement_data = (char *)malloc(sizeof(char) * strlen(piece_placement_data) + 1);
   strcpy(chessboard->piece_placement_data, piece_placement_data);
   chessboard->active_color = active_color;
+  chessboard->castling_availability = (char *)malloc(sizeof(char) * strlen(castling_availability) + 1);
   strcpy(chessboard->castling_availability, castling_availability);
+  chessboard->en_passant_target_square = (char *)malloc(sizeof(char) * strlen(en_passant_target_square) + 1);
   strcpy(chessboard->en_passant_target_square, en_passant_target_square);
   chessboard->halfmove_clock = halfmove_clock;
   chessboard->fullmove_clock = fullmove_clock;
@@ -59,7 +67,30 @@ static chessboard_t *chessboard_make(char *piece_placement_data, char active_col
 /* Functions for data types */
 
 /**
-  * @brief Converts PGN to a chessgame_t
+  * @brief Truncates the chessgame to its first N half-moves.
+  * @param *truncated_pgn Pointer to the truncated PGN notation
+  * @param *pgn Pointer to the PGN notation
+  * @param number_half_moves Number of half-moves
+  */
+*/
+static void 
+truncate_chessgame(char *truncated_pgn, char *pgn, uint16_t number_half_moves)
+{
+  char delimeter = ' ';
+  uint16_t count = 0;
+  while(count < number_half_moves) {
+    if(pgn[count] == delimeter) {
+      count += 1;
+    }
+    truncated_pgn[count] = pgn[count];
+    count += 1;
+  }
+  truncated_pgn[count] = '\0';
+  return truncated_pgn;
+}
+
+/**
+  * @brief Converts PGN to a chessgame
   * @param pgn PGN notation
   * @return *chessgame_t Pointer to the chessgame
   */
@@ -70,7 +101,7 @@ PGN_to_chessgame(char *pgn)
 }
 
 /**
-  * @brief Converts FEN to a chessboard_t
+  * @brief Converts FEN to a chessboard
   * @param fen FEN notation
   * @return *chessboard_t Pointer to the chessboard
   */
@@ -107,13 +138,14 @@ getBoard(PG_FUNCTION_ARGS)
   chessgame_t *chessgame = PG_GETARG_CHESSGAME_P(0);
   uint16_t number_half_moves = PG_GETARG_INT16(1);
   SCL_Record record;
-  SCL_recordFromPGN(record, chessgame->pgn);
   SCL_Board board;
+  char *fen = (char *)malloc(sizeof(char) * SCL_FEN_MAX_LENGTH);
+  SCL_recordFromPGN(record, chessgame->pgn);
   SCL_recordApply(record, board, number_half_moves);
-  char *fen;
-  SCL_boardToFEN(board, fen); //vérifer boolean
+  SCL_boardToFEN(board, fen);
   chessboard_t *chessboard = FEN_to_chessboard(fen);
-  PG_FREE_IF_COPY(chessgame, 0); //Free SCL structures ?
+  free(fen);
+  PG_FREE_IF_COPY(chessgame, 0);
   PG_RETURN_CHESSBOARD_P(chessboard);
 }
 
@@ -126,30 +158,14 @@ getBoard(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(getFirstMoves);
 Datum 
 getFirstMoves(PG_FUNCTION_ARGS) 
-{
-  // Two possibilities : One with SCL_recordRemoveLast(SCL_Record r) and one with truncate function that we have to implement here
-  // 1.
-  // chessgame -> SCL_Record
-  // calcule le nombre de moves à enlever => length - integer
-  // for loop avec SCL_recordRemoveLast(SCL_Record r) -> SCL_Record
-  // SCL_Record -> chessgame
-  // 2.
-  // chessgame truncate to n first moves -> new chessgame
-
+{ // Another possibilty is to implement function that truncate chessgame to n first moves -> new chessgame
   chessgame_t *chessgame = PG_GETARG_CHESSGAME_P(0);
   uint16_t number_half_moves = PG_GETARG_INT16(1);
-  SCL_Record record;
-  SCL_recordFromPGN(record, chessgame->pgn);
-  uint16_t length = SCL_recordLength(record);
-  uint16_t number_moves_to_remove = length - number_half_moves; //vérifier que length > number_half_moves
-  for (int i = 0; i < number_moves_to_remove; i++) {
-    SCL_recordRemoveLast(record);
-  }
-  SCL_PutCharFunction putCharFunc;
-  SCL_Board initialState = SCL_boardFromFEN(STARTING_POSITION);
-  SCL_printPGN(record, putCharFunc, initialState);
-  chessgame_t *new_chessgame = PGN_to_chessgame(putCharFunc); // new chessgame or chessgame ?
-  PG_FREE_IF_COPY(chessgame, 0); //Free SCL structures ?
+  char *truncated_pgn = (char *)malloc(sizeof(char) * MAX_PGN_LENGTH);
+  truncate_chessgame(truncated_pgn, chessgame->pgn, number_half_moves);
+  chessgame_t *new_chessgame = PGN_to_chessgame(truncated_pgn); // new chessgame or chessgame ?
+  PG_FREE_IF_COPY(chessgame, 0);
+  free(truncated_pgn);
   PG_RETURN_CHESSGAME_P(new_chessgame)
 }
 
