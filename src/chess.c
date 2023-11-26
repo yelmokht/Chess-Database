@@ -289,6 +289,26 @@ chessboard_cast_to_text(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+/* Constructors */
+
+PG_FUNCTION_INFO_V1(chessgame_constructor);
+Datum
+chessgame_constructor(PG_FUNCTION_ARGS)
+{
+  char *pgn = PG_GETARG_CSTRING(0);
+  PG_RETURN_CHESSGAME_P(PGN_to_chessgame(pgn));
+}
+
+PG_FUNCTION_INFO_V1(chessboard_constructor);
+Datum
+chessboard_constructor(PG_FUNCTION_ARGS)
+{
+  char *fen = PG_GETARG_CSTRING(0);
+  PG_RETURN_CHESSBOARD_P(FEN_to_chessboard(fen));
+}
+
+/*****************************************************************************/
+
 /* Functions */
 
 /**
