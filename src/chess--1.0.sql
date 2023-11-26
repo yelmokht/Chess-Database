@@ -1,272 +1,108 @@
 -- complain if script is sourced in psql, rather than via CREATE EXTENSION
-\echo Use "CREATE EXTENSION complex" to load this file. \quit
+\echo Use "CREATE EXTENSION chess" to load this file. \quit
 
 /******************************************************************************
- * Input/Output
+ * Input/Output for chessgame
  ******************************************************************************/
 
-CREATE OR REPLACE FUNCTION complex_in(cstring)
-  RETURNS complex
+CREATE OR REPLACE FUNCTION chessgame_in(cstring)
+  RETURNS chessgame
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION complex_out(complex)
+CREATE OR REPLACE FUNCTION chessgame_out(chessgame)
   RETURNS cstring
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION complex_recv(internal)
-  RETURNS complex
+CREATE OR REPLACE FUNCTION chessgame_recv(internal)
+  RETURNS chessgame
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION complex_send(complex)
+CREATE OR REPLACE FUNCTION chessgame_send(chessgame)
   RETURNS bytea
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE TYPE complex (
+CREATE TYPE chessgame (
   internallength = 16,
-  input          = complex_in,
-  output         = complex_out,
-  receive        = complex_recv,
-  send           = complex_send,
-  alignment      = double
+  input          = chessgame_in,
+  output         = chessgame_out,
+  receive        = chessgame_recv,
+  send           = chessgame_send,
+  alignment      = double /* idk which alignment to choose */
 );
 
-CREATE OR REPLACE FUNCTION complex(text)
-  RETURNS complex
-  AS 'MODULE_PATHNAME', 'complex_cast_from_text'
+CREATE OR REPLACE FUNCTION chessgame(text)
+  RETURNS chessgame
+  AS 'MODULE_PATHNAME', 'chessgame_cast_from_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION text(complex)
+CREATE OR REPLACE FUNCTION text(chessgame)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'complex_cast_to_text'
+  AS 'MODULE_PATHNAME', 'chessgame_cast_to_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE CAST (text as complex) WITH FUNCTION complex(text) AS IMPLICIT;
-CREATE CAST (complex as text) WITH FUNCTION text(complex);
+CREATE CAST (text as chessgame) WITH FUNCTION chessgame(text) AS IMPLICIT;
+CREATE CAST (chessgame as text) WITH FUNCTION text(chessgame);
 
 /******************************************************************************
- * Constructor
+ * Input/Output for chessboard
  ******************************************************************************/
 
-CREATE FUNCTION complex(double precision, double precision)
-  RETURNS complex
-  AS 'MODULE_PATHNAME', 'complex_constructor'
+CREATE OR REPLACE FUNCTION chessboard_in(cstring)
+  RETURNS chessboard
+  AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/*****************************************************************************
- * Accessing values
- *****************************************************************************/
-
-CREATE FUNCTION re(complex)
-  RETURNS double precision
-  AS 'MODULE_PATHNAME', 'complex_re'
+CREATE OR REPLACE FUNCTION chessboard_out(chessboard)
+  RETURNS cstring
+  AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION im(complex)
-  RETURNS double precision
-  AS 'MODULE_PATHNAME', 'complex_im'
+CREATE OR REPLACE FUNCTION chessboard_recv(internal)
+  RETURNS chessboard
+  AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION conjugate(complex)
-  RETURNS complex
-  AS 'MODULE_PATHNAME', 'complex_conj'
+CREATE OR REPLACE FUNCTION chessboard_send(chessboard)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE TYPE chessboard (
+  internallength = 16,
+  input          = chessboard_in,
+  output         = chessboard_out,
+  receive        = chessboard_recv,
+  send           = chessboard_send,
+  alignment      = double /* idk which alignment to choose */
+);
+
+CREATE OR REPLACE FUNCTION chessboard(text)
+  RETURNS chessboard
+  AS 'MODULE_PATHNAME', 'chessboard_cast_from_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION text(chessboard)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'chessboard_cast_to_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (text as chessboard) WITH FUNCTION chessboard(text) AS IMPLICIT;
+CREATE CAST (chessboard as text) WITH FUNCTION text(chessboard);
 
 /******************************************************************************
- * Operators
+ * Constructors
  ******************************************************************************/
 
-CREATE FUNCTION complex_eq(complex, complex)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'complex_eq'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION complex_ne(complex, complex)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'complex_ne'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION complex_left(complex, complex)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'complex_left'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION complex_right(complex, complex)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'complex_right'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION complex_below(complex, complex)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'complex_below'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION complex_above(complex, complex)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'complex_above'
+CREATE FUNCTION chessgame(double precision, double precision)
+  RETURNS chessgame
+  AS 'MODULE_PATHNAME', 'chessgame_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR ~= (
-  LEFTARG = complex, RIGHTARG = complex,
-  PROCEDURE = complex_eq,
-  COMMUTATOR = ~=, NEGATOR = <>
-);
-CREATE OPERATOR <> (
-  LEFTARG = complex, RIGHTARG = complex,
-  PROCEDURE = complex_ne,
-  COMMUTATOR = <>, NEGATOR = ~=
-);
-CREATE OPERATOR << (
-  LEFTARG = complex, RIGHTARG = complex,
-  PROCEDURE = complex_left,
-  COMMUTATOR = >>
-);
-CREATE OPERATOR >> (
-  LEFTARG = complex, RIGHTARG = complex,
-  PROCEDURE = complex_right,
-  COMMUTATOR = <<
-);
-CREATE OPERATOR <<| (
-  LEFTARG = complex, RIGHTARG = complex,
-  PROCEDURE = complex_below,
-  COMMUTATOR = |>>
-);
-CREATE OPERATOR |>> (
-  LEFTARG = complex, RIGHTARG = complex,
-  PROCEDURE = complex_above,
-  COMMUTATOR = <<|
-);
-
-/******************************************************************************/
-
-CREATE FUNCTION complex_add(complex, complex)
-  RETURNS complex
-  AS 'MODULE_PATHNAME', 'complex_add'
+CREATE FUNCTION chessboard(double precision, double precision)
+  RETURNS chessboard
+  AS 'MODULE_PATHNAME', 'chessboard_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION complex_sub(complex, complex)
-  RETURNS complex
-  AS 'MODULE_PATHNAME', 'complex_sub'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION complex_mul(complex, complex)
-  RETURNS complex
-  AS 'MODULE_PATHNAME', 'complex_mul'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION complex_div(complex, complex)
-  RETURNS complex
-  AS 'MODULE_PATHNAME', 'complex_div'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR + (
-  LEFTARG = complex, RIGHTARG = complex,
-  PROCEDURE = complex_add,
-  COMMUTATOR = +
-);
-CREATE OPERATOR - (
-  LEFTARG = complex, RIGHTARG = complex,
-  PROCEDURE = complex_sub
-);
-CREATE OPERATOR * (
-  LEFTARG = complex, RIGHTARG = complex,
-  PROCEDURE = complex_mul,
-  COMMUTATOR = *
-);
-CREATE OPERATOR / (
-  LEFTARG = complex, RIGHTARG = complex,
-  PROCEDURE = complex_div
-);
-
-/******************************************************************************/
-
-CREATE FUNCTION complex_dist(complex, complex)
-  RETURNS double precision
-  AS 'MODULE_PATHNAME', 'complex_dist'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR <-> (
-  LEFTARG = complex, RIGHTARG = complex,
-  PROCEDURE = complex_dist,
-  COMMUTATOR = <->
-);
-
-/******************************************************************************/
-
-/* B-Tree comparison functions */
-
-CREATE OR REPLACE FUNCTION complex_abs_eq(complex, complex)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OR REPLACE FUNCTION complex_abs_lt(complex, complex)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OR REPLACE FUNCTION complex_abs_le(complex, complex)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OR REPLACE FUNCTION complex_abs_gt(complex, complex)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OR REPLACE FUNCTION complex_abs_ge(complex, complex)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-
-/******************************************************************************/
-
-/* B-Tree comparison operators */
-
-CREATE OPERATOR = (
-  LEFTARG = complex, RIGHTARG = complex,
-  PROCEDURE = complex_abs_eq,
-  COMMUTATOR = =, NEGATOR = <>
-);
-CREATE OPERATOR < (
-  LEFTARG = complex, RIGHTARG = complex,
-  PROCEDURE = complex_abs_lt,
-  COMMUTATOR = >, NEGATOR = >=
-);
-CREATE OPERATOR <= (
-  LEFTARG = complex, RIGHTARG = complex,
-  PROCEDURE = complex_abs_le,
-  COMMUTATOR = >=, NEGATOR = >
-);
-CREATE OPERATOR >= (
-  LEFTARG = complex, RIGHTARG = complex,
-  PROCEDURE = complex_abs_ge,
-  COMMUTATOR = <=, NEGATOR = <
-);
-CREATE OPERATOR > (
-  LEFTARG = complex, RIGHTARG = complex,
-  PROCEDURE = complex_abs_gt,
-  COMMUTATOR = <, NEGATOR = <=
-);
-
-/******************************************************************************/
-
-/* B-Tree support function */
-
-CREATE OR REPLACE FUNCTION complex_abs_cmp(complex, complex)
-  RETURNS integer
-  AS 'MODULE_PATHNAME'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/******************************************************************************/
-
-/* B-Tree operator class */
-
-CREATE OPERATOR CLASS complex_abs_ops
-DEFAULT FOR TYPE complex USING btree
-AS
-        OPERATOR        1       <  ,
-        OPERATOR        2       <= ,
-        OPERATOR        3       =  ,
-        OPERATOR        4       >= ,
-        OPERATOR        5       >  ,
-        FUNCTION        1       complex_abs_cmp(complex, complex);
-
-/******************************************************************************/

@@ -375,7 +375,7 @@ hasOpening(PG_FUNCTION_ARGS)
 }
 
 /**
-  * @brief  Returns true if the chessgame contains the given board state in its first N half-moves.
+  * @brief Returns true if the chessgame contains the given board state in its first N half-moves.
   * Only compare the state of the pieces and not compare the move count, castling right, en passant pieces, ..
   * @param chessgame Pointer to the chessgame
   * @param chessboard Pointer to the chessboard
