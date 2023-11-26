@@ -34,7 +34,7 @@ typedef struct {
 #define PG_GETARG_CHESSBOARD_P(n) DatumGetChessboardP(PG_GETARG_DATUM(n))
 #define PG_RETURN_CHESSBOARD_P(x) return ChessboardPGetDatum(x)
 
-static chessgame_t *chessgame_make(char *san);
+static chessgame_t *chessgame_make(char *pgn);
 static chessboard_t *chessboard_make(char *piece_placement_data, char active_color, char *castling_availability, char *en_passant_target_square, uint16_t halfmove_clock, uint16_t fullmove_clock);
 
 static void truncate_chessgame(char *truncated_pgn, char *pgn, uint16_t number_half_moves);

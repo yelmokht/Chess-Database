@@ -1,7 +1,7 @@
 /*
- * chess.c
- *
  * PostgreSQL Chess
+ *
+ * chess.c
  *
  */
 
@@ -10,9 +10,11 @@
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
+
 #include "utils/builtins.h"
 #include "libpq/pqformat.h"
 #include "smallchesslib.h"
+
 #include "chess.h"
 
 PG_MODULE_MAGIC;
@@ -26,15 +28,14 @@ PG_MODULE_MAGIC;
  * @param pgn PGN notation of the chessgame
  * @return *chessgame_t Pointer to the chessgame
  */
-static chessgame_t
-*chessgame_make(const char *pgn)
+static chessgame_t *
+chessgame_make(char *pgn)
 {
   chessgame_t *chessgame = palloc0(sizeof(chessgame_t));
   chessgame->pgn = (char *)malloc(sizeof(char) * strlen(pgn) + 1);
   strcpy(chessgame->pgn, pgn);
   return chessgame;
 }
-
 
 /**
  * @brief Constructs a chessboard
@@ -46,8 +47,8 @@ static chessgame_t
  * @param fullmove_clock Fullmove clock
  * @return *chessboard_t Pointer to the chessboard
  */
-static chessboard_t 
-*chessboard_make(char *piece_placement_data, char active_color, char *castling_availability, char *en_passant_target_square, uint16_t halfmove_clock, uint16_t fullmove_clock)
+static chessboard_t *
+chessboard_make(char *piece_placement_data, char active_color, char *castling_availability, char *en_passant_target_square, uint16_t halfmove_clock, uint16_t fullmove_clock)
 {
   chessboard_t *chessboard = palloc0(sizeof(chessboard_t));
   chessboard->piece_placement_data = (char *)malloc(sizeof(char) * strlen(piece_placement_data) + 1);
@@ -65,6 +66,67 @@ static chessboard_t
 /*****************************************************************************/
 
 /* Functions for data types */
+
+/**
+  * @brief Converts PGN to a chessgame
+  * @param pgn PGN notation
+  * @return *chessgame_t Pointer to the chessgame
+  */
+static chessgame_t *
+PGN_to_chessgame(char *pgn)
+{
+  return chessgame_make(pgn);
+}
+
+/**
+  * @brief Converts chessgame to PGN
+  * @param chessgame Pointer to the chessgame
+  * @return *char Pointer to the PGN notation
+  */
+static char *
+chessgame_to_PGN(chessgame_t *chessgame)
+{
+  return psprintf("%s", chessgame->pgn);
+}
+
+/**
+  * @brief Converts FEN to a chessboard
+  * @param fen FEN notation
+  * @return *chessboard_t Pointer to the chessboard
+  */
+static chessboard_t *
+FEN_to_chessboard(char* fen) 
+{
+  char *token = strtok(fen, " ");
+  char *list[6];
+  int index = 0;
+
+  while(token != NULL) {
+    list[index] = token;
+    token = strtok(NULL, " ");
+    index += 1;
+  }
+
+  return chessboard_make(list[0], *list[1], list[2], list[3], atoi(list[4]), atoi(list[5]));
+}
+
+/**
+  * @brief Converts chessboard to FEN
+  * @param chessboard Pointer to the chessboard
+  * @return *char Pointer to the FEN notation
+  */
+static char *
+chessboard_to_FEN(chessboard_t *chessboard)
+{
+  return psprintf("%s %c %s %s %u %u",
+                chessboard->piece_placement_data,
+                chessboard->active_color,
+                chessboard->castling_availability,
+                chessboard->en_passant_target_square,
+                chessboard->halfmove_clock,
+                chessboard->fullmove_clock
+                );
+}
 
 /**
   * @brief Truncates the chessgame to its first N half-moves.
@@ -89,36 +151,140 @@ truncate_chessgame(char *truncated_pgn, char *pgn, uint16_t number_half_moves)
   return truncated_pgn;
 }
 
-/**
-  * @brief Converts PGN to a chessgame
-  * @param pgn PGN notation
-  * @return *chessgame_t Pointer to the chessgame
-  */
-static chessgame_t *
-PGN_to_chessgame(char *pgn)
+/*****************************************************************************/
+
+/* Input/Output for chessgame */
+
+PG_FUNCTION_INFO_V1(chessgame_in);
+Datum
+chessgame_in(PG_FUNCTION_ARGS)
 {
-  return chessgame_make(pgn);
+  char *str = PG_GETARG_CSTRING(0);
+  PG_RETURN_CHESSGAME_P(PGN_to_chessgame(str));
 }
 
-/**
-  * @brief Converts FEN to a chessboard
-  * @param fen FEN notation
-  * @return *chessboard_t Pointer to the chessboard
-  */
-static chessboard_t *
-FEN_to_chessboard(char* fen) 
+PG_FUNCTION_INFO_V1(chessgame_out);
+Datum
+chessgame_out(PG_FUNCTION_ARGS)
 {
-  char *token = strtok(fen, " ");
-  char *list[6];
-  int index = 0;
+  chessgame_t *chessgame = PG_GETARG_CHESSGAME_P(0);
+  char *result = chessgame_to_PGN(chessgame);
+  PG_FREE_IF_COPY(chessgame, 0);
+  PG_RETURN_CSTRING(result);
+}
 
-  while(token != NULL) {
-    list[index] = token;
-    token = strtok(NULL, " ");
-    index += 1;
-  }
+PG_FUNCTION_INFO_V1(chessgame_recv);
+Datum
+chessgame_recv(PG_FUNCTION_ARGS)
+{
+  StringInfo  buf = (StringInfo) PG_GETARG_POINTER(0);
+  chessgame_t *chessgame = (chessgame_t *) palloc(sizeof(chessgame_t));
+  chessgame->pgn = pq_getmsgfloat8(buf);
+  PG_RETURN_CHESSGAME_P(chessgame);
+}
 
-  return chessboard_make(list[0], *list[1], list[2], list[3], atoi(list[4]), atoi(list[5]));
+PG_FUNCTION_INFO_V1(chessgame_send);
+Datum
+chessgame_send(PG_FUNCTION_ARGS)
+{
+  chessgame_t *chessgame = PG_GETARG_CHESSGAME_P(0);
+  StringInfoData buf;
+  pq_begintypsend(&buf);
+  pq_sendfloat8(&buf, chessgame->pgn);
+  PG_FREE_IF_COPY(chessgame, 0);
+  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+}
+
+PG_FUNCTION_INFO_V1(chessgame_cast_from_text);
+Datum
+chessgame_cast_from_text(PG_FUNCTION_ARGS)
+{
+  text *txt = PG_GETARG_TEXT_P(0);
+  char *str = DatumGetCString(DirectFunctionCall1(textout, PointerGetDatum(txt)));
+  PG_RETURN_CHESSGAME_P(PGN_to_chessgame(str));
+}
+
+PG_FUNCTION_INFO_V1(chessgame_cast_to_text);
+Datum
+chessgame_cast_to_text(PG_FUNCTION_ARGS)
+{
+  chessgame_t *chessgame  = PG_GETARG_CHESSGAME_P(0);
+  text *out = (text *)DirectFunctionCall1(textin, PointerGetDatum(chessgame_to_PGN(chessgame)));
+  PG_FREE_IF_COPY(chessgame, 0);
+  PG_RETURN_TEXT_P(out);
+}
+
+/*****************************************************************************/
+
+/* Input/Output for chessboard */
+
+PG_FUNCTION_INFO_V1(chessboard_in);
+Datum
+chessboard_in(PG_FUNCTION_ARGS)
+{
+  char *str = PG_GETARG_CSTRING(0);
+  PG_RETURN_CHESSBOARD_P(FEN_to_chessboard(str));
+}
+
+PG_FUNCTION_INFO_V1(chessboard_out);
+Datum
+chessboard_out(PG_FUNCTION_ARGS)
+{
+  chessboard_t *chessboard = PG_GETARG_CHESSBOARD_P(0);
+  char *result = chessboard_to_FEN(chessboard);
+  PG_FREE_IF_COPY(chessboard, 0);
+  PG_RETURN_CSTRING(result);
+}
+
+PG_FUNCTION_INFO_V1(chessboard_recv);
+Datum
+chessboard_recv(PG_FUNCTION_ARGS)
+{
+  StringInfo  buf = (StringInfo) PG_GETARG_POINTER(0);
+  chessboard_t *chessboard = (chessboard_t *) palloc(sizeof(chessboard_t));
+  chessboard->piece_placement_data = pq_getmsgstring(buf);
+  chessboard->active_color = pq_getmsgstring(buf);
+  chessboard->castling_availability = pq_getmsgstring(buf);
+  chessboard->en_passant_target_square = pq_getmsgstring(buf);
+  chessboard->halfmove_clock = pq_getmsgstring(buf);
+  chessboard->fullmove_clock = pq_getmsgstring(buf);
+  PG_RETURN_CHESSBOARD_P(chessboard);
+}
+
+PG_FUNCTION_INFO_V1(chessboard_send);
+Datum
+chessboard_send(PG_FUNCTION_ARGS)
+{
+  chessboard_t *chessboard = PG_GETARG_CHESSBOARD_P(0);
+  StringInfoData buf;
+  pq_begintypsend(&buf);
+  pq_sendstring(&buf, chessboard->piece_placement_data);
+  pq_sendstring(&buf, chessboard->active_color);
+  pq_sendstring(&buf, chessboard->castling_availability);
+  pq_sendstring(&buf, chessboard->en_passant_target_square);
+  pq_sendstring(&buf, chessboard->halfmove_clock);
+  pq_sendstring(&buf, chessboard->fullmove_clock);
+  PG_FREE_IF_COPY(chessboard, 0);
+  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+}
+
+PG_FUNCTION_INFO_V1(chessboard_cast_from_text);
+Datum
+chessboard_cast_from_text(PG_FUNCTION_ARGS)
+{
+  text *txt = PG_GETARG_TEXT_P(0);
+  char *str = DatumGetCString(DirectFunctionCall1(textout, PointerGetDatum(txt)));
+  PG_RETURN_CHESSBOARD_P(FEN_to_chessboard(str));
+}
+
+PG_FUNCTION_INFO_V1(chessboard_cast_to_text);
+Datum
+chessboard_cast_to_text(PG_FUNCTION_ARGS)
+{
+  chessboard_t *chessboard  = PG_GETARG_CHESSBOARD_P(0);
+  text *out = (text *)DirectFunctionCall1(textin, PointerGetDatum(chessboard_to_FEN(chessboard)));
+  PG_FREE_IF_COPY(chessboard, 0);
+  PG_RETURN_TEXT_P(out);
 }
 
 /*****************************************************************************/
@@ -158,7 +324,7 @@ getBoard(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(getFirstMoves);
 Datum 
 getFirstMoves(PG_FUNCTION_ARGS) 
-{ // Another possibilty is to implement function that truncate chessgame to n first moves -> new chessgame
+{
   chessgame_t *chessgame = PG_GETARG_CHESSGAME_P(0);
   uint16_t number_half_moves = PG_GETARG_INT16(1);
   char *truncated_pgn = (char *)malloc(sizeof(char) * MAX_PGN_LENGTH);
