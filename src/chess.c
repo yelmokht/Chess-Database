@@ -14,8 +14,9 @@
 #include "utils/builtins.h"
 #include "libpq/pqformat.h"
 #include "smallchesslib.h"
-
 #include "chess.h"
+
+PG_MODULE_MAGIC;
 
 /*****************************************************************************/
 
