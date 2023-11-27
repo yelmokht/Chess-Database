@@ -9,7 +9,10 @@
         "math.h": "c",
         "stdio.h": "c",
         "smallchesslib.h": "c",
-        "pqformat.h": "c"
+        "pqformat.h": "c",
+        "compare": "c",
+        "cstdint": "c",
+        "stdint.h": "c"
     },
     "C_Cpp.default.compilerPath": "C:\\msys64\\ucrt64\\bin\\gcc.exe"
 }

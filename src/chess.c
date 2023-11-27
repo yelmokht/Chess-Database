@@ -93,7 +93,7 @@ chessgame_to_PGN(chessgame_t *chessgame)
   * @return *chessboard_t Pointer to the chessboard
   */
 static chessboard_t *
-FEN_to_chessboard(char* fen) 
+FEN_to_chessboard(char *fen) 
 {
   char *token = strtok(fen, " ");
   char *list[6];
@@ -159,7 +159,6 @@ truncate_chessgame(char *truncated_pgn, char *pgn, uint16_t number_half_moves)
     count += 1;
   }
   truncated_pgn[count] = '\0';
-  return truncated_pgn;
 }
 
 /*****************************************************************************/
@@ -190,7 +189,7 @@ chessgame_recv(PG_FUNCTION_ARGS)
 {
   StringInfo  buf = (StringInfo) PG_GETARG_POINTER(0);
   chessgame_t *chessgame = (chessgame_t *) palloc(sizeof(chessgame_t));
-  chessgame->pgn = pq_getmsgstring(buf); //ou getmsgtext ?
+  chessgame->pgn =(char*)pq_getmsgstring(buf); //ou getmsgtext ?
   PG_RETURN_CHESSGAME_P(chessgame);
 }
 
@@ -252,14 +251,7 @@ Datum
 chessboard_recv(PG_FUNCTION_ARGS)
 {
   StringInfo  buf = (StringInfo) PG_GETARG_POINTER(0);
-  chessboard_t *chessboard = (chessboard_t *) palloc(sizeof(chessboard_t));
-  chessboard->piece_placement_data = pq_getmsgstring(buf);
-  chessboard->active_color = pq_getmsgstring(buf);
-  chessboard->castling_availability = pq_getmsgstring(buf);
-  chessboard->en_passant_target_square = pq_getmsgstring(buf);
-  chessboard->halfmove_clock = pq_getmsgstring(buf);
-  chessboard->fullmove_clock = pq_getmsgstring(buf);
-  PG_RETURN_CHESSBOARD_P(chessboard);
+  PG_RETURN_CHESSBOARD_P(FEN_to_chessboard((char*)pq_getmsgstring(buf)));
 }
 
 PG_FUNCTION_INFO_V1(chessboard_send);
@@ -270,11 +262,11 @@ chessboard_send(PG_FUNCTION_ARGS)
   StringInfoData buf;
   pq_begintypsend(&buf);
   pq_sendstring(&buf, chessboard->piece_placement_data);
-  pq_sendstring(&buf, chessboard->active_color);
+  pq_sendstring(&buf, &chessboard->active_color);
   pq_sendstring(&buf, chessboard->castling_availability);
   pq_sendstring(&buf, chessboard->en_passant_target_square);
-  pq_sendstring(&buf, chessboard->halfmove_clock);
-  pq_sendstring(&buf, chessboard->fullmove_clock);
+  pq_sendstring(&buf, psprintf("%u", chessboard->halfmove_clock));
+  pq_sendstring(&buf, psprintf("%u", chessboard->fullmove_clock));
   PG_FREE_IF_COPY(chessboard, 0);
   PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }

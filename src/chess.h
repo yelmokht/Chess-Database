@@ -3,11 +3,13 @@
 
 #define MAX_PGN_LENGTH 4096
 
+#include <stdint.h>
+
 /**
  * @brief Structure containing all information representing a chess game state using SAN notation.
  */
 typedef struct {
-  const char* pgn;
+  char* pgn;
 } chessgame_t;
 
 /* fmgr macros chessgame type */
@@ -40,6 +42,6 @@ static chessboard_t *chessboard_make(char *piece_placement_data, char active_col
 static chessboard_t *chessgame_to_chessboard(chessgame_t *chessgame, uint16_t number_half_moves);
 static void truncate_chessgame(char *truncated_pgn, char *pgn, uint16_t number_half_moves);
 static chessgame_t *PGN_to_chessgame(char *pgn);
-static chessboard_t *FEN_to_chessboard(char* fen);
+static chessboard_t *FEN_to_chessboard(char *fen);
 
 #endif

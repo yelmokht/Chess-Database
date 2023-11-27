@@ -1,10 +1,8 @@
 MODULE_big	= chess
-OBJS = \
-	$(WIN32RES) \
-	chess.o \
+OBJS = $(WIN32RES) chess.o
 
 EXTENSION   = chess
-DATA        = chess--1.0.sql
+DATA        = chess--1.0.sql chess.control
 HEADERS_chess = chess.h
 
 PG_CONFIG ?= pg_config
