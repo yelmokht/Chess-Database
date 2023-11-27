@@ -17,8 +17,6 @@
 
 #include "chess.h"
 
-PG_MODULE_MAGIC;
-
 /*****************************************************************************/
 
 /* Constructors */
@@ -128,13 +126,26 @@ chessboard_to_FEN(chessboard_t *chessboard)
                 );
 }
 
+static chessboard_t *
+chessgame_to_chessboard(chessgame_t *chessgame, uint16_t number_half_moves)
+{
+  SCL_Record record;
+  SCL_Board board;
+  char *fen = (char *)malloc(sizeof(char) * SCL_FEN_MAX_LENGTH);
+  SCL_recordFromPGN(record, chessgame->pgn);
+  SCL_recordApply(record, board, number_half_moves);
+  SCL_boardToFEN(board, fen);
+  chessboard_t *chessboard = FEN_to_chessboard(fen);
+  free(fen);
+  return chessboard;
+}
+
 /**
   * @brief Truncates the chessgame to its first N half-moves.
   * @param *truncated_pgn Pointer to the truncated PGN notation
   * @param *pgn Pointer to the PGN notation
   * @param number_half_moves Number of half-moves
   */
-*/
 static void 
 truncate_chessgame(char *truncated_pgn, char *pgn, uint16_t number_half_moves)
 {
@@ -179,7 +190,7 @@ chessgame_recv(PG_FUNCTION_ARGS)
 {
   StringInfo  buf = (StringInfo) PG_GETARG_POINTER(0);
   chessgame_t *chessgame = (chessgame_t *) palloc(sizeof(chessgame_t));
-  chessgame->pgn = pq_getmsgfloat8(buf);
+  chessgame->pgn = pq_getmsgstring(buf); //ou getmsgtext ?
   PG_RETURN_CHESSGAME_P(chessgame);
 }
 
@@ -190,7 +201,7 @@ chessgame_send(PG_FUNCTION_ARGS)
   chessgame_t *chessgame = PG_GETARG_CHESSGAME_P(0);
   StringInfoData buf;
   pq_begintypsend(&buf);
-  pq_sendfloat8(&buf, chessgame->pgn);
+  pq_sendstring(&buf, chessgame->pgn); //ou sendtext ?
   PG_FREE_IF_COPY(chessgame, 0);
   PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }
@@ -323,14 +334,7 @@ getBoard(PG_FUNCTION_ARGS)
 {
   chessgame_t *chessgame = PG_GETARG_CHESSGAME_P(0);
   uint16_t number_half_moves = PG_GETARG_INT16(1);
-  SCL_Record record;
-  SCL_Board board;
-  char *fen = (char *)malloc(sizeof(char) * SCL_FEN_MAX_LENGTH);
-  SCL_recordFromPGN(record, chessgame->pgn);
-  SCL_recordApply(record, board, number_half_moves);
-  SCL_boardToFEN(board, fen);
-  chessboard_t *chessboard = FEN_to_chessboard(fen);
-  free(fen);
+  chessboard_t *chessboard = chessgame_to_chessboard(chessgame, number_half_moves);
   PG_FREE_IF_COPY(chessgame, 0);
   PG_RETURN_CHESSBOARD_P(chessboard);
 }
@@ -352,7 +356,7 @@ getFirstMoves(PG_FUNCTION_ARGS)
   chessgame_t *new_chessgame = PGN_to_chessgame(truncated_pgn); // new chessgame or chessgame ?
   PG_FREE_IF_COPY(chessgame, 0);
   free(truncated_pgn);
-  PG_RETURN_CHESSGAME_P(new_chessgame)
+  PG_RETURN_CHESSGAME_P(new_chessgame);
 }
 
 /**
@@ -389,7 +393,7 @@ hasBoard(PG_FUNCTION_ARGS)
   chessgame_t *chessgame = PG_GETARG_CHESSGAME_P(0);
   chessboard_t *chessboard = PG_GETARG_CHESSBOARD_P(1);
   uint16_t number_half_moves = PG_GETARG_INT16(2);
-  chessboard_t *chessboard_of_chessgame = getBoard(chessgame, number_half_moves);
+  chessboard_t *chessboard_of_chessgame = chessgame_to_chessboard(chessgame, number_half_moves);
   bool hasBoard = strcmp(chessboard_of_chessgame->piece_placement_data, chessboard->piece_placement_data);
   PG_FREE_IF_COPY(chessgame, 0);
   PG_FREE_IF_COPY(chessboard, 1);

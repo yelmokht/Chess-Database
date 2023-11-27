@@ -1,16 +1,15 @@
 {
     "configurations": [
         {
-            "name": "Linux",
+            "name": "Windows",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/Library/PostgreSQL/16/include/postgresql/server"
+                "C:/msys64/ucrt64/include/**"
             ],
-            "defines": [],
-            "compilerPath": "/usr/bin/gcc-11",
-            "cStandard": "c17",
-            "cppStandard": "c++98",
-            "intelliSenseMode": "linux-gcc-x64"
+            "cStandard": "c23",
+            "cppStandard": "c++23",
+            "intelliSenseMode": "gcc-x86",
+            "compilerPath": "C:/msys64/ucrt64/bin/gcc.exe"
         }
     ],
     "version": 4
