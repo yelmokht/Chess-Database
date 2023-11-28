@@ -3,7 +3,7 @@
 
 /******************************************************************************
  * Input/Output for chessgame
- ******************************************************************************/
+******************************************************************************/
 
 CREATE OR REPLACE FUNCTION chessgame_in(cstring)
   RETURNS chessgame
@@ -49,7 +49,7 @@ CREATE CAST (chessgame as text) WITH FUNCTION text(chessgame);
 
 /******************************************************************************
  * Input/Output for chessboard
- ******************************************************************************/
+******************************************************************************/
 
 CREATE OR REPLACE FUNCTION chessboard_in(cstring)
   RETURNS chessboard
@@ -95,7 +95,7 @@ CREATE CAST (chessboard as text) WITH FUNCTION text(chessboard);
 
 /******************************************************************************
  * Constructors
- ******************************************************************************/
+******************************************************************************/
 
 CREATE FUNCTION chessgame(cstring)
   RETURNS chessgame
@@ -107,9 +107,9 @@ CREATE FUNCTION chessboard(cstring)
   AS 'MODULE_PATHNAME', 'chessboard_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-  /******************************************************************************
+/******************************************************************************
  * Functions
- ******************************************************************************/
+******************************************************************************/
 
 CREATE FUNCTION getBoard(chessgame, integer)
   RETURNS chessboard

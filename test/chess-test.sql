@@ -9,4 +9,17 @@ INSERT INTO games VALUES
 ('1.e4 c6 2.c4 d5 3.exd5 cxd5 4.cxd5 Nf6 5.Nc3 Nxd5 6.d4 Nc6 7.Nf3 e6 '),
 ('1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 a6 6.Bg5 e6 7.f4 Be7 ');
 
+\echo
+\echo Games inserted succesfully.
+\echo
+\echo Test 1: SELECT * FROM games;
+\echo
 SELECT * FROM games;
+\echo
+\echo Test 2: SELECT count(*) FROM games WHERE hasboard(game, 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', 10);
+SELECT count(*) FROM games WHERE hasboard(game, 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', 10);
+\echo
+\echo Test 3: SELECT count(*) FROM games WHERE hasopening(game, '1. e4 e5 2. Nf3 Nf6 3. d3');
+SELECT count(*) FROM games WHERE hasopening(game, '1. e4 e5 2. Nf3 Nf6 3. d3');
+\echo
+\echo Test 4: SELECT g.game FROM games g, favoriteGames f WHERE hasopening(g.game, getFirstMoves(f.game, 10));
