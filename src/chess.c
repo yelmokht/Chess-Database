@@ -321,7 +321,7 @@ chessboard_constructor(PG_FUNCTION_ARGS)
   * @param number_half_moves Number of half-moves
   * @return *chessboard_t Pointer to the chessboard
   */
-PG_FUNCTION_INFO_V1(getBoard);
+PG_FUNCTION_INFO_V1(getBoard); // Problem with chessgame_to_chessboard
 Datum
 getBoard(PG_FUNCTION_ARGS)
 {
@@ -338,7 +338,7 @@ getBoard(PG_FUNCTION_ARGS)
   * @param number_half_moves Number of half-moves
   * @return *chessgame_t Pointer to the chessgame
   */
-PG_FUNCTION_INFO_V1(getFirstMoves);
+PG_FUNCTION_INFO_V1(getFirstMoves); // Not working as intended
 Datum 
 getFirstMoves(PG_FUNCTION_ARGS) 
 {
@@ -365,7 +365,7 @@ hasOpening(PG_FUNCTION_ARGS)
 {
   chessgame_t *chessgame_1 = PG_GETARG_CHESSGAME_P(0);
   chessgame_t *chessgame_2 = PG_GETARG_CHESSGAME_P(1);
-  bool hasOpening = strcmp(chessgame_1->pgn, chessgame_2->pgn);
+  bool hasOpening = strcmp(chessgame_1->pgn, chessgame_2->pgn); // it is not compare but more chesgame_1->pgn contains chessgame_2->pgn but it is working
   PG_FREE_IF_COPY(chessgame_1, 0);
   PG_FREE_IF_COPY(chessgame_2, 1);
   PG_RETURN_BOOL(hasOpening == 0);
@@ -387,7 +387,7 @@ hasBoard(PG_FUNCTION_ARGS)
   chessboard_t *chessboard = PG_GETARG_CHESSBOARD_P(1);
   uint16_t number_half_moves = PG_GETARG_INT16(2);
   chessboard_t *chessboard_of_chessgame = chessgame_to_chessboard(chessgame, number_half_moves);
-  bool hasBoard = strcmp(chessboard_of_chessgame->piece_placement_data, chessboard->piece_placement_data);
+  bool hasBoard = strcmp(chessboard_of_chessgame->piece_placement_data, chessboard->piece_placement_data); // OK car on compare des chessboard
   PG_FREE_IF_COPY(chessgame, 0);
   PG_FREE_IF_COPY(chessboard, 1);
   PG_RETURN_BOOL(hasBoard == 0);
