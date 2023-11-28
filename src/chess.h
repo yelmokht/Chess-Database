@@ -39,9 +39,11 @@ typedef struct {
 static chessgame_t *chessgame_make(char *pgn);
 static chessboard_t *chessboard_make(char *piece_placement_data, char active_color, char *castling_availability, char *en_passant_target_square, uint16_t halfmove_clock, uint16_t fullmove_clock);
 
-static chessboard_t *chessgame_to_chessboard(chessgame_t *chessgame, uint16_t number_half_moves);
-static void truncate_chessgame(char *truncated_pgn, char *pgn, uint16_t number_half_moves);
 static chessgame_t *PGN_to_chessgame(char *pgn);
+static char *chessgame_to_PGN(chessgame_t *chessgame);
 static chessboard_t *FEN_to_chessboard(char *fen);
+static char *chessboard_to_FEN(chessboard_t *chessboard);
+static chessboard_t *chessgame_to_chessboard(chessgame_t *chessgame, uint16_t number_half_moves);
+static chessgame_t  *truncate_chessgame(chessgame_t *chessgame, uint16_t number_half_moves);
 
 #endif

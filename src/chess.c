@@ -30,7 +30,7 @@ PG_MODULE_MAGIC;
 static chessgame_t *
 chessgame_make(char *pgn)
 {
-  chessgame_t *chessgame = palloc0(sizeof(chessgame_t));
+  chessgame_t *chessgame = (chessgame_t *)malloc(sizeof(chessgame_t));
   chessgame->pgn = (char *)malloc(sizeof(char) * strlen(pgn) + 1);
   strcpy(chessgame->pgn, pgn);
   return chessgame;
@@ -49,7 +49,7 @@ chessgame_make(char *pgn)
 static chessboard_t *
 chessboard_make(char *piece_placement_data, char active_color, char *castling_availability, char *en_passant_target_square, uint16_t halfmove_clock, uint16_t fullmove_clock)
 {
-  chessboard_t *chessboard = palloc0(sizeof(chessboard_t));
+  chessboard_t *chessboard = (chessboard_t *)malloc(sizeof(chessboard_t));
   chessboard->piece_placement_data = (char *)malloc(sizeof(char) * strlen(piece_placement_data) + 1);
   strcpy(chessboard->piece_placement_data, piece_placement_data);
   chessboard->active_color = active_color;
@@ -143,23 +143,28 @@ chessgame_to_chessboard(chessgame_t *chessgame, uint16_t number_half_moves)
 
 /**
   * @brief Truncates the chessgame to its first N half-moves.
-  * @param *truncated_pgn Pointer to the truncated PGN notation
-  * @param *pgn Pointer to the PGN notation
+  * @param chessgame Pointer to the chessgame
   * @param number_half_moves Number of half-moves
+  * @return *chessgame_t Pointer to the new truncated chessgame
   */
-static void 
-truncate_chessgame(char *truncated_pgn, char *pgn, uint16_t number_half_moves)
+static chessgame_t * 
+truncate_chessgame(chessgame_t *chessgame, uint16_t number_half_moves)
 {
   char delimeter = ' ';
-  uint16_t count = 0;
-  while(count < number_half_moves) {
-    if(pgn[count] == delimeter) {
-      count += 1;
+  uint16_t i = 0;
+  uint16_t counter = 0;
+  char *truncated_pgn = (char *)malloc(sizeof(char) * MAX_PGN_LENGTH);
+  while (chessgame->pgn[i] != '\0' && counter < number_half_moves) {
+    if(chessgame->pgn[i] == delimeter) {
+      counter += 1;
     }
-    truncated_pgn[count] = pgn[count];
-    count += 1;
+    truncated_pgn[i] = chessgame->pgn[i];
+    i += 1;
   }
-  truncated_pgn[count] = '\0';
+  truncated_pgn[i] = '\0';
+  chessgame_t *truncated_chessgame = PGN_to_chessgame(truncated_pgn);
+  free(truncated_pgn);
+  return truncated_chessgame;
 }
 
 /*****************************************************************************/
@@ -189,7 +194,7 @@ Datum
 chessgame_recv(PG_FUNCTION_ARGS)
 {
   StringInfo  buf = (StringInfo) PG_GETARG_POINTER(0);
-  chessgame_t *chessgame = (chessgame_t *) palloc(sizeof(chessgame_t));
+  chessgame_t *chessgame = (chessgame_t *) malloc(sizeof(chessgame_t));
   chessgame->pgn =(char*)pq_getmsgstring(buf); //ou getmsgtext ?
   PG_RETURN_CHESSGAME_P(chessgame);
 }
@@ -321,7 +326,7 @@ chessboard_constructor(PG_FUNCTION_ARGS)
   * @param number_half_moves Number of half-moves
   * @return *chessboard_t Pointer to the chessboard
   */
-PG_FUNCTION_INFO_V1(getBoard); // Problem with chessgame_to_chessboard
+PG_FUNCTION_INFO_V1(getBoard); // Working
 Datum
 getBoard(PG_FUNCTION_ARGS)
 {
@@ -338,18 +343,15 @@ getBoard(PG_FUNCTION_ARGS)
   * @param number_half_moves Number of half-moves
   * @return *chessgame_t Pointer to the chessgame
   */
-PG_FUNCTION_INFO_V1(getFirstMoves); // Not working as intended
-Datum 
+PG_FUNCTION_INFO_V1(getFirstMoves); // Working
+Datum
 getFirstMoves(PG_FUNCTION_ARGS) 
 {
   chessgame_t *chessgame = PG_GETARG_CHESSGAME_P(0);
   uint16_t number_half_moves = PG_GETARG_INT16(1);
-  char *truncated_pgn = (char *)malloc(sizeof(char) * MAX_PGN_LENGTH);
-  truncate_chessgame(truncated_pgn, chessgame->pgn, number_half_moves);
-  chessgame_t *new_chessgame = PGN_to_chessgame(truncated_pgn); // new chessgame or chessgame ?
+  chessgame_t *truncated_chessgame = truncate_chessgame(chessgame, number_half_moves);
   PG_FREE_IF_COPY(chessgame, 0);
-  free(truncated_pgn);
-  PG_RETURN_CHESSGAME_P(new_chessgame);
+  PG_RETURN_CHESSGAME_P(truncated_chessgame);
 }
 
 /**
@@ -359,16 +361,16 @@ getFirstMoves(PG_FUNCTION_ARGS)
   * @param chessgame Pointer to the second chessgame
   * @return bool True if the first chessgame starts with the exact same set of moves as the second chessgame
   */
-PG_FUNCTION_INFO_V1(hasOpening);
+PG_FUNCTION_INFO_V1(hasOpening); // Working
 Datum
 hasOpening(PG_FUNCTION_ARGS)
 {
   chessgame_t *chessgame_1 = PG_GETARG_CHESSGAME_P(0);
   chessgame_t *chessgame_2 = PG_GETARG_CHESSGAME_P(1);
-  bool hasOpening = strcmp(chessgame_1->pgn, chessgame_2->pgn); // it is not compare but more chesgame_1->pgn contains chessgame_2->pgn but it is working
+  bool hasOpening = strstr(chessgame_1->pgn, chessgame_2->pgn) != NULL;
   PG_FREE_IF_COPY(chessgame_1, 0);
   PG_FREE_IF_COPY(chessgame_2, 1);
-  PG_RETURN_BOOL(hasOpening == 0);
+  PG_RETURN_BOOL(hasOpening);
 }
 
 /**
@@ -379,15 +381,15 @@ hasOpening(PG_FUNCTION_ARGS)
   * @param number_half_moves Number of half-moves
   * @return bool True if the chessgame contains the given board state in its first N half-moves
 */
-PG_FUNCTION_INFO_V1(hasBoard);
+PG_FUNCTION_INFO_V1(hasBoard); // Working
 Datum
 hasBoard(PG_FUNCTION_ARGS)
 {
   chessgame_t *chessgame = PG_GETARG_CHESSGAME_P(0);
   chessboard_t *chessboard = PG_GETARG_CHESSBOARD_P(1);
   uint16_t number_half_moves = PG_GETARG_INT16(2);
-  chessboard_t *chessboard_of_chessgame = chessgame_to_chessboard(chessgame, number_half_moves);
-  bool hasBoard = strcmp(chessboard_of_chessgame->piece_placement_data, chessboard->piece_placement_data); // OK car on compare des chessboard
+  chessboard_t *chessboard_of_chessgame = chessgame_to_chessboard(chessgame, number_half_moves); //one chessboard or list of chessboards?
+  bool hasBoard = strcmp(chessboard_of_chessgame->piece_placement_data, chessboard->piece_placement_data);
   PG_FREE_IF_COPY(chessgame, 0);
   PG_FREE_IF_COPY(chessboard, 1);
   PG_RETURN_BOOL(hasBoard == 0);
