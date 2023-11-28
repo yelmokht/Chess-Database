@@ -1,7 +1,3 @@
-# Ignore VSCode files
-.vscode/
-.idea/
-
 # Ignore compiled files
 *.class
 *.jar
@@ -11,3 +7,6 @@
 *.tar.gz
 *.rar
 *.o
+*.so
+*.bc
+*.dll

@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# This script is used to create the chess database and install the chess extension.
+
+# Database name to check
+dbname="chess"
+extensionname="chess"
+
+# Check if the database exists
+result=$(psql -lqt | cut -d \| -f 1 | grep -w $dbname)
+
+if [ $result == $dbname ]; then
+    echo "Database $dbname already exists. If you want to recreate the database, please drop the database with the command <dropdb $dbname> and run this script again."
+else
+    echo "Database $dbname does not exist. Creating database $dbname."
+    cd src
+    make && sudo make install
+    createdb $dbname
+    psql $dbname -c "CREATE EXTENSION $extensionname ;"
+
+fi
