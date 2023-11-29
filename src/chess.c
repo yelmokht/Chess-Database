@@ -212,7 +212,7 @@ compare_pieces(chessboard_t *chessboard_1, chessboard_t *chessboard_2)
 static bool
 chessgame_contains_chessboard(chessgame_t *chessgame, chessboard_t *chessboard, uint16_t number_half_moves)
 {
-  for (uint16_t i = 1; i <= number_half_moves; i++) {
+  for (uint16_t i = 0; i <= number_half_moves; i++) {
     if (compare_pieces(chessgame_to_chessboard(chessgame, i), chessboard)) {
       return true;
     }
