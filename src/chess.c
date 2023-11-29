@@ -27,7 +27,7 @@ PG_MODULE_MAGIC;
  * @brief Constructs a chessgame
  * @param pgn PGN notation of the chessgame
  * @return *chessgame_t Pointer to the chessgame
- */
+*/
 static chessgame_t *
 chessgame_make(const char *pgn)
 {
@@ -41,7 +41,7 @@ chessgame_make(const char *pgn)
  * @brief Constructs a chessboard
  * @param fen FEN notation of the chessboard
  * @return *chessboard_t Pointer to the chessboard
- */
+*/
 static chessboard_t *
 chessboard_make(const char *fen)
 {
@@ -59,7 +59,7 @@ chessboard_make(const char *fen)
   * @brief Converts PGN to a chessgame
   * @param pgn PGN notation
   * @return *chessgame_t Pointer to the chessgame
-  */
+*/
 static chessgame_t *
 PGN_to_chessgame(char *pgn) //this function should handle errors
 {
@@ -70,7 +70,7 @@ PGN_to_chessgame(char *pgn) //this function should handle errors
   * @brief Converts chessgame to PGN
   * @param chessgame Pointer to the chessgame
   * @return *char Pointer to the PGN notation
-  */
+*/
 static char *
 chessgame_to_PGN(chessgame_t *chessgame)
 {
@@ -81,9 +81,9 @@ chessgame_to_PGN(chessgame_t *chessgame)
   * @brief Converts FEN to a chessboard
   * @param fen FEN notation
   * @return *chessboard_t Pointer to the chessboard
-  */
+*/
 static chessboard_t *
-FEN_to_chessboard(char *fen)
+FEN_to_chessboard(char *fen) //this function should handle errors
 {
   return chessboard_make(fen);
 }
@@ -92,13 +92,19 @@ FEN_to_chessboard(char *fen)
   * @brief Converts chessboard to FEN
   * @param chessboard Pointer to the chessboard
   * @return *char Pointer to the FEN notation
-  */
+*/
 static char *
 chessboard_to_FEN(chessboard_t *chessboard)
 {
   return psprintf("%s", chessboard->fen);
 }
 
+/**
+ * @brief Converts a chessgame to a chessboard at a given half-move.
+ * @param chessgame Pointer to the chessgame
+ * @param number_half_moves Number of half-moves
+ * @return *chessboard_t Pointer to the chessboard
+*/
 static chessboard_t *
 chessgame_to_chessboard(chessgame_t *chessgame, uint16_t number_half_moves)
 {
@@ -114,11 +120,11 @@ chessgame_to_chessboard(chessgame_t *chessgame, uint16_t number_half_moves)
 }
 
 /**
-  * @brief Truncates the chessgame to its first N half-moves.
+  * @brief Truncates a chessgame to its first N half-moves.
   * @param chessgame Pointer to the chessgame
   * @param number_half_moves Number of half-moves
   * @return *chessgame_t Pointer to the new truncated chessgame
-  */
+*/
 static chessgame_t * 
 truncate_chessgame(chessgame_t *chessgame, uint16_t number_half_moves)
 {
@@ -290,7 +296,7 @@ chessboard_constructor(PG_FUNCTION_ARGS)
   * @param chessgame Pointer to the chessgame
   * @param number_half_moves Number of half-moves
   * @return *chessboard_t Pointer to the chessboard
-  */
+*/
 PG_FUNCTION_INFO_V1(getBoard); // Working
 Datum
 getBoard(PG_FUNCTION_ARGS)
@@ -307,8 +313,8 @@ getBoard(PG_FUNCTION_ARGS)
   * @param chessgame Pointer to the chessgame
   * @param number_half_moves Number of half-moves
   * @return *chessgame_t Pointer to the chessgame
-  */
-PG_FUNCTION_INFO_V1(getFirstMoves); // Working
+*/
+PG_FUNCTION_INFO_V1(getFirstMoves);
 Datum
 getFirstMoves(PG_FUNCTION_ARGS) 
 {
@@ -325,8 +331,8 @@ getFirstMoves(PG_FUNCTION_ARGS)
   * @param chessgame Pointer to the first chessgame
   * @param chessgame Pointer to the second chessgame
   * @return bool True if the first chessgame starts with the exact same set of moves as the second chessgame
-  */
-PG_FUNCTION_INFO_V1(hasOpening); // Working
+*/
+PG_FUNCTION_INFO_V1(hasOpening);
 Datum
 hasOpening(PG_FUNCTION_ARGS)
 {

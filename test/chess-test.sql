@@ -12,9 +12,19 @@ INSERT INTO games VALUES
 \echo
 \echo Games inserted succesfully.
 \echo
-\echo Test 1: SELECT * FROM games;
-\echo
+\echo Test 0: SELECT * FROM games;
 SELECT * FROM games;
+\echo
+\echo Test 1: Size of data types
+\echo
+\echo Test 1.1: Size of each game - SELECT game, pg_column_size(game) AS game_size_in_bytes FROM games;
+SELECT game, pg_column_size(game) AS game_size_in_bytes FROM games;
+\echo Test 1.2: Size of all the games in the column game - SELECT SUM(pg_column_size(game)) AS game_column_size_in_bytes FROM games;
+SELECT SUM(pg_column_size(game)) AS game_column_size_in_bytes FROM games;
+\echo Test 1.3: Size of the games table - SELECT pg_total_relation_size('games') AS games_size_in_bytes;
+SELECT pg_total_relation_size('games') AS games_size_in_bytes;
+\echo Test 1.4: Size of a single block in PostgreSQL - SELECT current_setting('block_size');
+SELECT current_setting('block_size');
 \echo
 \echo Test 2: getBoard
 \echo
