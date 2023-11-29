@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# This script is used to test the chess database and chess extension.
+
+cd test
+psql chess < ./pgn_parser_to_sql/Carlsen.sql
