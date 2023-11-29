@@ -20,7 +20,7 @@
 PG_MODULE_MAGIC;
 
 /******************************************************************************
- * Constructors
+ * Constructors for data types
 ******************************************************************************/
 
 /**
@@ -52,7 +52,7 @@ chessboard_make(const char *fen)
 }
 
 /******************************************************************************
- * Functions for data types
+ * Internal functions for data types
 ******************************************************************************/
 
 /**
@@ -63,6 +63,13 @@ chessboard_make(const char *fen)
 static chessgame_t *
 PGN_to_chessgame(char *pgn) //this function should handle errors
 {
+  SCL_Record record;
+  SCL_recordFromPGN(record, pgn);
+  bool pgn_is_valid = SCL_recordLength(record) != 0;
+  if (!pgn_is_valid)
+  {
+    ereport(ERROR,(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), errmsg("invalid input syntax for type %s: \"%s\"", "chessgame", pgn)));
+  }
   return chessgame_make(pgn);
 }
 
@@ -85,6 +92,12 @@ chessgame_to_PGN(chessgame_t *chessgame)
 static chessboard_t *
 FEN_to_chessboard(char *fen) //this function should handle errors
 {
+  SCL_Board board;
+  bool fen_is_valid = SCL_boardFromFEN(board, fen);
+  if (!fen_is_valid)
+  {
+    ereport(ERROR,(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), errmsg("invalid input syntax for type %s: \"%s\"", "chessboard", fen)));
+  }
   return chessboard_make(fen);
 }
 
@@ -146,7 +159,7 @@ truncate_chessgame(chessgame_t *chessgame, uint16_t number_half_moves)
 }
 
 /******************************************************************************
- * Input/output for chessgame
+ * Input/output for chessgame data type
 ******************************************************************************/
 
 PG_FUNCTION_INFO_V1(chessgame_in);
@@ -207,7 +220,7 @@ chessgame_cast_to_text(PG_FUNCTION_ARGS)
 }
 
 /******************************************************************************
- * Input/output for chessboard
+ * Input/output functions for chessboard data type
 ******************************************************************************/
 
 PG_FUNCTION_INFO_V1(chessboard_in);
@@ -268,7 +281,7 @@ chessboard_cast_to_text(PG_FUNCTION_ARGS)
 }
 
 /******************************************************************************
- * Constructors
+ * Constructors for data types
 ******************************************************************************/
 
 PG_FUNCTION_INFO_V1(chessgame_constructor);
@@ -288,7 +301,7 @@ chessboard_constructor(PG_FUNCTION_ARGS)
 }
 
 /******************************************************************************
- * Functions
+ * Functions and predicates
 ******************************************************************************/
 
 /**
@@ -352,7 +365,7 @@ hasOpening(PG_FUNCTION_ARGS)
   * @param number_half_moves Number of half-moves
   * @return bool True if the chessgame contains the given board state in its first N half-moves
 */
-PG_FUNCTION_INFO_V1(hasBoard); // Working
+PG_FUNCTION_INFO_V1(hasBoard);
 Datum
 hasBoard(PG_FUNCTION_ARGS)
 {
