@@ -9,7 +9,8 @@
  * @brief Structure containing all information representing a chess game state using SAN notation.
  */
 typedef struct {
-  char* pgn;
+  int32 length;
+  char pgn[FLEXIBLE_ARRAY_MEMBER];
 } chessgame_t;
 
 /* fmgr macros chessgame type */
@@ -22,12 +23,8 @@ typedef struct {
  * @brief Structure containing all information representing a chess board state using FEN notation.
  */
 typedef struct {
-  char *piece_placement_data;
-  char active_color;
-  char *castling_availability;
-  char *en_passant_target_square;
-  uint16_t halfmove_clock;
-  uint16_t fullmove_clock;
+  int32 length;
+  char fen[FLEXIBLE_ARRAY_MEMBER];
 } chessboard_t;
 
 /* fmgr macros chessboard type */
@@ -36,9 +33,8 @@ typedef struct {
 #define PG_GETARG_CHESSBOARD_P(n) DatumGetChessboardP(PG_GETARG_DATUM(n))
 #define PG_RETURN_CHESSBOARD_P(x) return ChessboardPGetDatum(x)
 
-static chessgame_t *chessgame_make(char *pgn);
-static chessboard_t *chessboard_make(char *piece_placement_data, char active_color, char *castling_availability, char *en_passant_target_square, uint16_t halfmove_clock, uint16_t fullmove_clock);
-
+static chessgame_t *chessgame_make(const char *pgn);
+static chessboard_t *chessboard_make(const char *fen);
 static chessgame_t *PGN_to_chessgame(char *pgn);
 static char *chessgame_to_PGN(chessgame_t *chessgame);
 static chessboard_t *FEN_to_chessboard(char *fen);

@@ -26,12 +26,11 @@ CREATE OR REPLACE FUNCTION chessgame_send(chessgame)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE TYPE chessgame (
-  internallength = 8, -- because we have a pointer
+  internallength = variable,
   input          = chessgame_in,
   output         = chessgame_out,
   receive        = chessgame_recv,
-  send           = chessgame_send,
-  alignment      = char -- because we have a pointer
+  send           = chessgame_send
 );
 
 CREATE OR REPLACE FUNCTION chessgame(text)
@@ -72,12 +71,11 @@ CREATE OR REPLACE FUNCTION chessboard_send(chessboard)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE TYPE chessboard (
-  internallength = 8, -- because we have a pointer
+  internallength = variable,
   input          = chessboard_in,
   output         = chessboard_out,
   receive        = chessboard_recv,
-  send           = chessboard_send,
-  alignment      = char
+  send           = chessboard_send
 );
 
 CREATE OR REPLACE FUNCTION chessboard(text)

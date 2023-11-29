@@ -13,14 +13,15 @@
 
 #include "utils/builtins.h"
 #include "libpq/pqformat.h"
+#include "varatt.h"
 #include "smallchesslib.h"
 #include "chess.h"
 
 PG_MODULE_MAGIC;
 
-/*****************************************************************************/
-
-/* Constructors */
+/******************************************************************************
+ * Constructors
+******************************************************************************/
 
 /**
  * @brief Constructs a chessgame
@@ -28,43 +29,31 @@ PG_MODULE_MAGIC;
  * @return *chessgame_t Pointer to the chessgame
  */
 static chessgame_t *
-chessgame_make(char *pgn)
+chessgame_make(const char *pgn)
 {
-  chessgame_t *chessgame = (chessgame_t *)malloc(sizeof(chessgame_t));
-  chessgame->pgn = (char *)malloc(sizeof(char) * strlen(pgn) + 1);
-  strcpy(chessgame->pgn, pgn);
+  chessgame_t *chessgame = (chessgame_t *) palloc(VARHDRSZ + strlen(pgn) + 1);
+  SET_VARSIZE(chessgame, VARHDRSZ + strlen(pgn) + 1);
+  memcpy(chessgame->pgn, pgn, strlen(pgn) + 1);
   return chessgame;
 }
 
 /**
  * @brief Constructs a chessboard
- * @param piece_placement_data Piece placement data
- * @param active_color Active color
- * @param castling_availability Castling availability
- * @param en_passant_target_square En passant target square
- * @param halfmove_clock Halfmove clock
- * @param fullmove_clock Fullmove clock
+ * @param fen FEN notation of the chessboard
  * @return *chessboard_t Pointer to the chessboard
  */
 static chessboard_t *
-chessboard_make(char *piece_placement_data, char active_color, char *castling_availability, char *en_passant_target_square, uint16_t halfmove_clock, uint16_t fullmove_clock)
+chessboard_make(const char *fen)
 {
-  chessboard_t *chessboard = (chessboard_t *)malloc(sizeof(chessboard_t));
-  chessboard->piece_placement_data = (char *)malloc(sizeof(char) * strlen(piece_placement_data) + 1);
-  strcpy(chessboard->piece_placement_data, piece_placement_data);
-  chessboard->active_color = active_color;
-  chessboard->castling_availability = (char *)malloc(sizeof(char) * strlen(castling_availability) + 1);
-  strcpy(chessboard->castling_availability, castling_availability);
-  chessboard->en_passant_target_square = (char *)malloc(sizeof(char) * strlen(en_passant_target_square) + 1);
-  strcpy(chessboard->en_passant_target_square, en_passant_target_square);
-  chessboard->halfmove_clock = halfmove_clock;
-  chessboard->fullmove_clock = fullmove_clock;
+  chessboard_t *chessboard = (chessboard_t *) palloc(VARHDRSZ + strlen(fen) + 1);
+  SET_VARSIZE(chessboard, VARHDRSZ + strlen(fen) + 1);
+  memcpy(chessboard->fen, fen, strlen(fen) + 1);
   return chessboard;
 }
 
-/*****************************************************************************/
-
-/* Functions for data types */
+/******************************************************************************
+ * Functions for data types
+******************************************************************************/
 
 /**
   * @brief Converts PGN to a chessgame
@@ -72,7 +61,7 @@ chessboard_make(char *piece_placement_data, char active_color, char *castling_av
   * @return *chessgame_t Pointer to the chessgame
   */
 static chessgame_t *
-PGN_to_chessgame(char *pgn)
+PGN_to_chessgame(char *pgn) //this function should handle errors
 {
   return chessgame_make(pgn);
 }
@@ -94,19 +83,9 @@ chessgame_to_PGN(chessgame_t *chessgame)
   * @return *chessboard_t Pointer to the chessboard
   */
 static chessboard_t *
-FEN_to_chessboard(char *fen) 
+FEN_to_chessboard(char *fen)
 {
-  char *token = strtok(fen, " ");
-  char *list[6];
-  int index = 0;
-
-  while(token != NULL) {
-    list[index] = token;
-    token = strtok(NULL, " ");
-    index += 1;
-  }
-
-  return chessboard_make(list[0], *list[1], list[2], list[3], atoi(list[4]), atoi(list[5]));
+  return chessboard_make(fen);
 }
 
 /**
@@ -117,14 +96,7 @@ FEN_to_chessboard(char *fen)
 static char *
 chessboard_to_FEN(chessboard_t *chessboard)
 {
-  return psprintf("%s %c %s %s %u %u",
-                chessboard->piece_placement_data,
-                chessboard->active_color,
-                chessboard->castling_availability,
-                chessboard->en_passant_target_square,
-                chessboard->halfmove_clock,
-                chessboard->fullmove_clock
-                );
+  return psprintf("%s", chessboard->fen);
 }
 
 static chessboard_t *
@@ -132,7 +104,7 @@ chessgame_to_chessboard(chessgame_t *chessgame, uint16_t number_half_moves)
 {
   SCL_Record record;
   SCL_Board board;
-  char *fen = (char *)malloc(sizeof(char) * SCL_FEN_MAX_LENGTH);
+  char *fen = (char *) malloc(sizeof(char) * SCL_FEN_MAX_LENGTH);
   SCL_recordFromPGN(record, chessgame->pgn);
   SCL_recordApply(record, board, number_half_moves);
   SCL_boardToFEN(board, fen);
@@ -153,7 +125,7 @@ truncate_chessgame(chessgame_t *chessgame, uint16_t number_half_moves)
   char delimeter = ' ';
   uint16_t i = 0;
   uint16_t counter = 0;
-  char *truncated_pgn = (char *)malloc(sizeof(char) * MAX_PGN_LENGTH);
+  char *truncated_pgn = (char *) malloc(sizeof(char) * MAX_PGN_LENGTH);
   while (chessgame->pgn[i] != '\0' && counter < number_half_moves) {
     if(chessgame->pgn[i] == delimeter) {
       counter += 1;
@@ -167,16 +139,16 @@ truncate_chessgame(chessgame_t *chessgame, uint16_t number_half_moves)
   return truncated_chessgame;
 }
 
-/*****************************************************************************/
-
-/* Input/Output for chessgame */
+/******************************************************************************
+ * Input/output for chessgame
+******************************************************************************/
 
 PG_FUNCTION_INFO_V1(chessgame_in);
 Datum
 chessgame_in(PG_FUNCTION_ARGS)
 {
   char *str = PG_GETARG_CSTRING(0);
-  PG_RETURN_CHESSGAME_P(PGN_to_chessgame(str));
+  PG_RETURN_CHESSGAME_P(PGN_to_chessgame(str)); 
 }
 
 PG_FUNCTION_INFO_V1(chessgame_out);
@@ -184,7 +156,7 @@ Datum
 chessgame_out(PG_FUNCTION_ARGS)
 {
   chessgame_t *chessgame = PG_GETARG_CHESSGAME_P(0);
-  char *result = chessgame_to_PGN(chessgame);
+  char *result = chessgame_to_PGN(chessgame); 
   PG_FREE_IF_COPY(chessgame, 0);
   PG_RETURN_CSTRING(result);
 }
@@ -194,9 +166,7 @@ Datum
 chessgame_recv(PG_FUNCTION_ARGS)
 {
   StringInfo  buf = (StringInfo) PG_GETARG_POINTER(0);
-  chessgame_t *chessgame = (chessgame_t *) malloc(sizeof(chessgame_t));
-  chessgame->pgn =(char*)pq_getmsgstring(buf); //ou getmsgtext ?
-  PG_RETURN_CHESSGAME_P(chessgame);
+  PG_RETURN_CHESSGAME_P(PGN_to_chessgame((char*)pq_getmsgstring(buf)));
 }
 
 PG_FUNCTION_INFO_V1(chessgame_send);
@@ -206,7 +176,7 @@ chessgame_send(PG_FUNCTION_ARGS)
   chessgame_t *chessgame = PG_GETARG_CHESSGAME_P(0);
   StringInfoData buf;
   pq_begintypsend(&buf);
-  pq_sendstring(&buf, chessgame->pgn); //ou sendtext ?
+  pq_sendstring(&buf, chessgame->pgn);
   PG_FREE_IF_COPY(chessgame, 0);
   PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }
@@ -230,9 +200,9 @@ chessgame_cast_to_text(PG_FUNCTION_ARGS)
   PG_RETURN_TEXT_P(out);
 }
 
-/*****************************************************************************/
-
-/* Input/Output for chessboard */
+/******************************************************************************
+ * Input/output for chessboard
+******************************************************************************/
 
 PG_FUNCTION_INFO_V1(chessboard_in);
 Datum
@@ -267,12 +237,7 @@ chessboard_send(PG_FUNCTION_ARGS)
   chessboard_t *chessboard = PG_GETARG_CHESSBOARD_P(0);
   StringInfoData buf;
   pq_begintypsend(&buf);
-  pq_sendstring(&buf, chessboard->piece_placement_data);
-  pq_sendstring(&buf, &chessboard->active_color);
-  pq_sendstring(&buf, chessboard->castling_availability);
-  pq_sendstring(&buf, chessboard->en_passant_target_square);
-  pq_sendstring(&buf, psprintf("%u", chessboard->halfmove_clock));
-  pq_sendstring(&buf, psprintf("%u", chessboard->fullmove_clock));
+  pq_sendstring(&buf, chessboard->fen);
   PG_FREE_IF_COPY(chessboard, 0);
   PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }
@@ -296,9 +261,9 @@ chessboard_cast_to_text(PG_FUNCTION_ARGS)
   PG_RETURN_TEXT_P(out);
 }
 
-/*****************************************************************************/
-
-/* Constructors */
+/******************************************************************************
+ * Constructors
+******************************************************************************/
 
 PG_FUNCTION_INFO_V1(chessgame_constructor);
 Datum
@@ -316,9 +281,9 @@ chessboard_constructor(PG_FUNCTION_ARGS)
   PG_RETURN_CHESSBOARD_P(FEN_to_chessboard(fen));
 }
 
-/*****************************************************************************/
-
-/* Functions */
+/******************************************************************************
+ * Functions
+******************************************************************************/
 
 /**
   * @brief Returns the board state at a given half-move.
@@ -389,7 +354,7 @@ hasBoard(PG_FUNCTION_ARGS)
   chessboard_t *chessboard = PG_GETARG_CHESSBOARD_P(1);
   uint16_t number_half_moves = PG_GETARG_INT16(2);
   chessboard_t *chessboard_of_chessgame = chessgame_to_chessboard(chessgame, number_half_moves); //one chessboard or list of chessboards?
-  bool hasBoard = strcmp(chessboard_of_chessgame->piece_placement_data, chessboard->piece_placement_data);
+  bool hasBoard = strcmp(chessboard_of_chessgame->fen, chessboard->fen); //Have to add function for only comparing the state of the pieces
   PG_FREE_IF_COPY(chessgame, 0);
   PG_FREE_IF_COPY(chessboard, 1);
   PG_RETURN_BOOL(hasBoard == 0);

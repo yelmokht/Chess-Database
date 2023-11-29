@@ -16,7 +16,7 @@
 #include "chess.h"
 
 #define opening(chessgame) ("null") // TODO
-#define board(chessboard) (chessboard->piece_placement_data)
+#define board(chessboard) ("null") // TODO
 
 /* Index to support the hasOpening predicate */
 
