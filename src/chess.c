@@ -61,7 +61,7 @@ chessboard_make(const char *fen)
   * @return *chessgame_t Pointer to the chessgame
 */
 static chessgame_t *
-PGN_to_chessgame(char *pgn) //this function should handle errors
+PGN_to_chessgame(char *pgn)
 {
   SCL_Record record;
   SCL_recordFromPGN(record, pgn);
@@ -199,6 +199,25 @@ compare_pieces(chessboard_t *chessboard_1, chessboard_t *chessboard_2)
   free(pieces_1);
   free(pieces_2); 
   return result;
+}
+
+/**
+ * @brief Returns true if the chessgame contains the given board state in its first N half-moves.
+ * Only compare the state of the pieces and not compare the move count, castling right, en passant pieces, etc.
+ * @param chessgame Pointer to the chessgame
+ * @param chessboard Pointer to the chessboard
+ * @param number_half_moves Number of half-moves
+ * @return bool True if the chessgame contains the given board state in its first N half-moves
+*/
+static bool
+chessgame_contains_chessboard(chessgame_t *chessgame, chessboard_t *chessboard, uint16_t number_half_moves)
+{
+  for (uint16_t i = 1; i <= number_half_moves; i++) {
+    if (compare_pieces(chessgame_to_chessboard(chessgame, i), chessboard)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 /******************************************************************************
@@ -353,7 +372,7 @@ chessboard_constructor(PG_FUNCTION_ARGS)
   * @param number_half_moves Number of half-moves
   * @return *chessboard_t Pointer to the chessboard
 */
-PG_FUNCTION_INFO_V1(getBoard); // Working
+PG_FUNCTION_INFO_V1(getBoard);
 Datum
 getBoard(PG_FUNCTION_ARGS)
 {
@@ -415,8 +434,7 @@ hasBoard(PG_FUNCTION_ARGS)
   chessgame_t *chessgame = PG_GETARG_CHESSGAME_P(0);
   chessboard_t *chessboard = PG_GETARG_CHESSBOARD_P(1);
   uint16_t number_half_moves = PG_GETARG_INT16(2);
-  chessboard_t *chessboard_of_chessgame = chessgame_to_chessboard(chessgame, number_half_moves); //one chessboard or list of chessboards?
-  bool hasBoard = compare_pieces(chessboard_of_chessgame, chessboard);
+  bool hasBoard = chessgame_contains_chessboard(chessgame, chessboard, number_half_moves);
   PG_FREE_IF_COPY(chessgame, 0);
   PG_FREE_IF_COPY(chessboard, 1);
   PG_RETURN_BOOL(hasBoard);
