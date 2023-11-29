@@ -158,6 +158,49 @@ truncate_chessgame(chessgame_t *chessgame, uint16_t number_half_moves)
   return truncated_chessgame;
 }
 
+/**
+ * @brief Compares the moves of two chessgames.
+ * @param chessgame_1 Pointer to the first chessgame
+ * @param chessgame_2 Pointer to the second chessgame
+ * @return bool True if the first chessgame starts with the exact same set of moves as the second chessgame
+*/
+static bool 
+compare_moves(chessgame_t *chessgame_1, chessgame_t *chessgame_2)
+{
+  return strstr(chessgame_1->pgn, chessgame_2->pgn) != NULL;
+}
+
+/**
+ * @brief Compares the pieces of two chessboards.
+ * @param chessboard_1 Pointer to the first chessboard
+ * @param chessboard_2 Pointer to the second chessboard
+ * @return bool True if the first chessboard contains the same pieces as the second chessboard
+*/
+static bool
+compare_pieces(chessboard_t *chessboard_1, chessboard_t *chessboard_2)
+{
+  char *pieces_1 = (char *) malloc(sizeof(char) * SCL_FEN_MAX_LENGTH);
+  char *pieces_2 = (char *) malloc(sizeof(char) * SCL_FEN_MAX_LENGTH);
+  uint16_t i = 0;
+  uint16_t j = 0;
+  while (chessboard_1->fen[i] != ' ' && chessboard_1->fen[i] != '\0') {
+    pieces_1[i] = chessboard_1->fen[i];
+    i += 1;
+  }
+  pieces_1[i] = '\0';
+
+  while (chessboard_2->fen[j] != ' ' && chessboard_2->fen[j] != '\0') {
+    pieces_2[j] = chessboard_2->fen[j];
+    j += 1;
+  }
+  pieces_2[j] = '\0';
+
+  bool result = strcmp(pieces_1, pieces_2) == 0;
+  free(pieces_1);
+  free(pieces_2); 
+  return result;
+}
+
 /******************************************************************************
  * Input/output for chessgame data type
 ******************************************************************************/
@@ -351,7 +394,7 @@ hasOpening(PG_FUNCTION_ARGS)
 {
   chessgame_t *chessgame_1 = PG_GETARG_CHESSGAME_P(0);
   chessgame_t *chessgame_2 = PG_GETARG_CHESSGAME_P(1);
-  bool hasOpening = strstr(chessgame_1->pgn, chessgame_2->pgn) != NULL;
+  bool hasOpening = compare_moves(chessgame_1, chessgame_2);
   PG_FREE_IF_COPY(chessgame_1, 0);
   PG_FREE_IF_COPY(chessgame_2, 1);
   PG_RETURN_BOOL(hasOpening);
@@ -359,7 +402,7 @@ hasOpening(PG_FUNCTION_ARGS)
 
 /**
   * @brief Returns true if the chessgame contains the given board state in its first N half-moves.
-  * Only compare the state of the pieces and not compare the move count, castling right, en passant pieces, ..
+  * Only compare the state of the pieces and not compare the move count, castling right, en passant pieces, etc.
   * @param chessgame Pointer to the chessgame
   * @param chessboard Pointer to the chessboard
   * @param number_half_moves Number of half-moves
@@ -373,8 +416,8 @@ hasBoard(PG_FUNCTION_ARGS)
   chessboard_t *chessboard = PG_GETARG_CHESSBOARD_P(1);
   uint16_t number_half_moves = PG_GETARG_INT16(2);
   chessboard_t *chessboard_of_chessgame = chessgame_to_chessboard(chessgame, number_half_moves); //one chessboard or list of chessboards?
-  bool hasBoard = strcmp(chessboard_of_chessgame->fen, chessboard->fen); //Have to add function for only comparing the state of the pieces
+  bool hasBoard = compare_pieces(chessboard_of_chessgame, chessboard);
   PG_FREE_IF_COPY(chessgame, 0);
   PG_FREE_IF_COPY(chessboard, 1);
-  PG_RETURN_BOOL(hasBoard == 0);
+  PG_RETURN_BOOL(hasBoard);
 }

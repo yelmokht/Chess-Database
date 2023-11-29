@@ -66,7 +66,7 @@ SELECT hasOpening(game, '1.e4 c6 2.c4 d5 3.exd5 cxd5 4.cxd5 Nf6 5.Nc3 g6 6.Bc4 B
 SELECT hasOpening(game, '1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 a6 6.Bg5 e6 7.f4 Be7 ') FROM games; -- Only 5 true
 \echo Test 4.4: SELECT hasOpening(game, '1.e1 c1') FROM games;
 SELECT hasOpening(game, '1.e1 c1') FROM games; -- All false
-\echo Test 4.5: SELECT hasOpening(game, '') FROM games;
+\echo Test 4.5: SELECT hasOpening(game, '1.e4 ') FROM games;
 SELECT hasOpening(game, '') FROM games; -- All true
 \echo
 \echo Test 5: hasBoard
