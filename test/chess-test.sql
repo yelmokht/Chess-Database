@@ -1,3 +1,4 @@
+\timing on
 \echo Test 0: SELECT * FROM games;
 SELECT * FROM games;
 \echo
