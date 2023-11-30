@@ -1,12 +1,21 @@
+SRC_DIR=src
+TEST_DIR=test
+EXTENSION=chess
+DATABASE=chess
+
 chess:
-	./src/chess
+	$(SRC_DIR)/$(EXTENSION)
 
-test: chess
-	./test/test
+small_tests: chess
+	psql $(DATABASE) < $(TEST_DIR)/small.sql
+	psql $(DATABASE) < $(TEST_DIR)/$(EXTENSION)-test.sql
+	dropdb $(DATABASE)
 
-test_import: chess test
-	./test/test_import
+large_tests: chess
+	psql $(DATABASE) < $(TEST_DIR)/Carlsen.sql
+	psql $(DATABASE) < $(TEST_DIR)/$(EXTENSION)-test.sql
+	dropdb $(DATABASE)
 
 clean:
-	rm -f ./src/*.o ./src/*.bc ./src/*.so
-	dropdb chess
+	rm -f $(SRC_DIR)/*.o $(SRC_DIR)/*.bc $(SRC_DIR)/*.so
+	dropdb $(DATABASE)

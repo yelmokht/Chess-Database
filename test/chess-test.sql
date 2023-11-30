@@ -1,28 +1,14 @@
-CREATE TABLE games (game chessgame);
-
-CREATE TABLE favoriteGames (game chessgame);
-
-INSERT INTO games VALUES
-('1.e4 e6 2.d4 d5 3.Nd2 Nf6 4.e5 Nfd7 5.f4 c5 6.c3 Nc6 7.Ndf3 cxd4 '),
-('1.e4 e6 2.d4 d5 3.Nd2 c5 4.exd5 Qxd5 5.Ngf3 cxd4 6.Bc4 Qd6 7.O-O Nf6 '),
-('1.e4 c6 2.c4 d5 3.exd5 cxd5 4.cxd5 Nf6 5.Nc3 g6 6.Bc4 Bg7 7.Nf3 O-O '),
-('1.e4 c6 2.c4 d5 3.exd5 cxd5 4.cxd5 Nf6 5.Nc3 Nxd5 6.d4 Nc6 7.Nf3 e6 '),
-('1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 a6 6.Bg5 e6 7.f4 Be7 ');
-
-\echo
-\echo Games inserted succesfully.
-\echo
 \echo Test 0: SELECT * FROM games;
 SELECT * FROM games;
 \echo
 \echo Test 1: Size of data types
 \echo
-\echo Test 1.1: Size of each game - SELECT game, pg_column_size(game) AS game_size_in_bytes FROM games;
-SELECT game, pg_column_size(game) AS game_size_in_bytes FROM games;
-\echo Test 1.2: Size of all the games in the column game - SELECT SUM(pg_column_size(game)) AS game_column_size_in_bytes FROM games;
-SELECT SUM(pg_column_size(game)) AS game_column_size_in_bytes FROM games;
-\echo Test 1.3: Size of the games table - SELECT pg_total_relation_size('games') AS games_size_in_bytes;
-SELECT pg_total_relation_size('games') AS games_size_in_bytes;
+\echo Test 1.1: Size of each game - SELECT game, pg_size_pretty(pg_column_size(game)::bigint) AS game_size FROM games;
+SELECT game, pg_size_pretty(pg_column_size(game)::bigint) AS game_size FROM games;
+\echo Test 1.2: Size of all the games in the column game - SELECT pg_size_pretty(SUM(pg_column_size(game))) AS game_column_size FROM games;
+SELECT pg_size_pretty(SUM(pg_column_size(game))) AS game_column_size FROM games;
+\echo Test 1.3: Size of the games table - SELECT pg_size_pretty(pg_total_relation_size('games')) AS games_size;
+SELECT pg_size_pretty(pg_total_relation_size('games')) AS games_size;
 \echo Test 1.4: Size of a single block in PostgreSQL - SELECT current_setting('block_size');
 SELECT current_setting('block_size');
 \echo
@@ -89,3 +75,4 @@ SELECT count(*) FROM games WHERE hasBoard(game, 'rnbqkbnr/pppppppp/8/8/8/8/PPPPP
 SELECT count(*) FROM games WHERE hasopening(game, '1.e4 e5 2.Nf3 Nf6 3.d3 ');
 \echo
 \echo Test 8: SELECT g.game FROM games g, favoriteGames f WHERE hasopening(g.game, getFirstMoves(f.game, 10));
+SELECT g.game FROM games g, favoriteGames f WHERE hasopening(g.game, getFirstMoves(f.game, 10));

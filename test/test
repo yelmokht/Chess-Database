@@ -1,6 +1,0 @@
-#!/bin/bash
-
-# This script is used to test the chess database and chess extension.
-
-cd test
-psql chess < chess-test.sql
