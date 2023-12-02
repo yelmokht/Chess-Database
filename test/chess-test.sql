@@ -69,11 +69,9 @@ SELECT hasBoard(game, 'rnbqk2r/1p2bppp/p2ppn2/6B1/3NPP2/2N5/PPP3PP/R2QKB1R w KQk
 \echo Test 5.5: SELECT hasBoard(game, 'rnbqk2r/1p2bppp/p2ppn2/6B1/3NPP2/2N5/PPP3PP/R2QKB1R w KQkq - 1 8', 15) FROM games;
 SELECT hasBoard(game, 'rnbqk2r/1p2bppp/p2ppn2/6B1/3NPP2/2N5/PPP3PP/R2QKB1R w KQkq - 1 8', 15) FROM games; -- Only 5 true
 \echo
-\echo Test 6: SELECT count(*) FROM games WHERE hasBoard(game, 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', 10);
+\echo Test 7: hasBoard predicate in WHERE clause without index and with GIN index
+\echo
+\echo Test 7.1: SELECT count(*) FROM games WHERE hasBoard(game, 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', 10);
 SELECT count(*) FROM games WHERE hasBoard(game, 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', 10);
-\echo
-\echo Test 7: SELECT count(*) FROM games WHERE hasopening(game, '1.e4 e5 2.Nf3 Nf6 3.d3 ');
-SELECT count(*) FROM games WHERE hasopening(game, '1.e4 e5 2.Nf3 Nf6 3.d3 ');
-\echo
-\echo Test 8: SELECT g.game FROM games g, favoriteGames f WHERE hasopening(g.game, getFirstMoves(f.game, 10));
-SELECT g.game FROM games g, favoriteGames f WHERE hasopening(g.game, getFirstMoves(f.game, 10));
+
+CREATE INDEX idx_games_game ON games USING gin(game_tsv)

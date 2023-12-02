@@ -33,6 +33,11 @@ typedef struct {
 #define PG_GETARG_CHESSBOARD_P(n) DatumGetChessboardP(PG_GETARG_DATUM(n))
 #define PG_RETURN_CHESSBOARD_P(x) return ChessboardPGetDatum(x)
 
+/* fmgr macros list of chessboard type */
+#define DatumGetChessboardListP(X, length)  (Datum result[length]; for (int i = 0; i < length; i++) {result[i] = PointerGetDatum(X[i]);} return result;)
+#define ChessboardListPGetDatum(X, length)  DatumGetChessboardListP(X, length)
+#define PG_RETURN_CHESSBOARD_LIST_P(x, length) return ChessboardListPGetDatum(x, length)
+
 static chessgame_t *chessgame_make(const char *pgn);
 static chessboard_t *chessboard_make(const char *fen);
 static chessgame_t *PGN_to_chessgame(char *pgn);

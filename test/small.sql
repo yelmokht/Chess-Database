@@ -1,4 +1,4 @@
-CREATE TABLE games (game chessgame);
+CREATE TABLE games (game chessgame, list chessgame[]);
 
 CREATE TABLE favoriteGames (game chessgame);
 
@@ -8,6 +8,10 @@ INSERT INTO games VALUES
 ('1.e4 c6 2.c4 d5 3.exd5 cxd5 4.cxd5 Nf6 5.Nc3 g6 6.Bc4 Bg7 7.Nf3 O-O '),
 ('1.e4 c6 2.c4 d5 3.exd5 cxd5 4.cxd5 Nf6 5.Nc3 Nxd5 6.d4 Nc6 7.Nf3 e6 '),
 ('1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 a6 6.Bg5 e6 7.f4 Be7 ');
+
+UPDATE games SET list = chessgame_to_chessboard_list(game);
+
+CREATE INDEX game_tsv_idx ON games USING GIN(game_tsv) with (fastupdate = true);
 
 INSERT INTO favoriteGames VALUES
 ('1.e4 c6 2.c4 d5 3.exd5 cxd5 4.cxd5 Nf6 5.Nc3 g6 6.Bc4 Bg7 7.Nf3 O-O ');

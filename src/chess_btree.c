@@ -15,15 +15,48 @@
 
 #include "chess.h"
 
-#define opening(chessgame) ("null") // TODO
-#define board(chessboard) ("null") // TODO
+#define opening(chessgame) (chessgame->pgn)
 
-/* Index to support the hasOpening predicate */
+/******************************************************************************
+ * Btree index functions to support the hasOpening predicate 
+******************************************************************************/
 
 static int
 chess_opening_cmp_internal(chessgame_t *a, chessgame_t *b)
 {
-    return strcmp(opening(a), opening(b));
+  if (opening(a) < opening(b))
+  {
+    return -1;
+  }
+  if (opening(a) > opening(b))
+  {
+    return 1;
+  }
+  return 0;
+}
+
+PG_FUNCTION_INFO_V1(chess_opening_lt);
+Datum
+chess_opening_lt(PG_FUNCTION_ARGS)
+{
+  chessgame_t *c = PG_GETARG_CHESSGAME_P(0);
+  chessgame_t *d = PG_GETARG_CHESSGAME_P(1);
+  bool result = chess_opening_cmp_internal(c, d) < 0;
+  PG_FREE_IF_COPY(c, 0);
+  PG_FREE_IF_COPY(d, 1);
+  PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(chess_opening_le);
+Datum
+chess_opening_le(PG_FUNCTION_ARGS)
+{
+  chessgame_t *c = PG_GETARG_CHESSGAME_P(0);
+  chessgame_t *d = PG_GETARG_CHESSGAME_P(1);
+  bool result = chess_opening_cmp_internal(c, d) <= 0;
+  PG_FREE_IF_COPY(c, 0);
+  PG_FREE_IF_COPY(d, 1);
+  PG_RETURN_BOOL(result);
 }
 
 PG_FUNCTION_INFO_V1(chess_opening_eq);
@@ -50,6 +83,30 @@ chess_opening_ne(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
+PG_FUNCTION_INFO_V1(chess_opening_ge);
+Datum
+chess_opening_ge(PG_FUNCTION_ARGS)
+{
+  chessgame_t *c = PG_GETARG_CHESSGAME_P(0);
+  chessgame_t *d = PG_GETARG_CHESSGAME_P(1);
+  bool result = chess_opening_cmp_internal(c, d) >= 0;
+  PG_FREE_IF_COPY(c, 0);
+  PG_FREE_IF_COPY(d, 1);
+  PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(chess_opening_gt);
+Datum
+chess_opening_gt(PG_FUNCTION_ARGS)
+{
+  chessgame_t *c = PG_GETARG_CHESSGAME_P(0);
+  chessgame_t *d = PG_GETARG_CHESSGAME_P(1);
+  bool result = chess_opening_cmp_internal(c, d) > 0;
+  PG_FREE_IF_COPY(c, 0);
+  PG_FREE_IF_COPY(d, 1);
+  PG_RETURN_BOOL(result);
+}
+
 PG_FUNCTION_INFO_V1(chess_opening_cmp);
 Datum
 chess_opening_cmp(PG_FUNCTION_ARGS)
@@ -57,53 +114,6 @@ chess_opening_cmp(PG_FUNCTION_ARGS)
   chessgame_t *c = PG_GETARG_CHESSGAME_P(0);
   chessgame_t *d = PG_GETARG_CHESSGAME_P(1);
   int result = chess_opening_cmp_internal(c, d);
-  PG_FREE_IF_COPY(c, 0);
-  PG_FREE_IF_COPY(d, 1);
-  PG_RETURN_INT32(result);
-}
-
-
-/*****************************************************************************/
-
-/* Index to support the hasBoard predicate */
-
-static int
-chess_board_cmp_internal(chessboard_t *a, chessboard_t *b)
-{
-    return strcmp(board(a), board(b));
-}
-
-PG_FUNCTION_INFO_V1(chess_board_eq);
-Datum
-chess_board_eq(PG_FUNCTION_ARGS)
-{
-  chessboard_t *c = PG_GETARG_CHESSBOARD_P(0);
-  chessboard_t *d = PG_GETARG_CHESSBOARD_P(1);
-  bool result = chess_board_cmp_internal(c, d) == 0;
-  PG_FREE_IF_COPY(c, 0);
-  PG_FREE_IF_COPY(d, 1);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(chess_board_ne);
-Datum
-chess_board_ne(PG_FUNCTION_ARGS)
-{
-  chessboard_t *c = PG_GETARG_CHESSBOARD_P(0);
-  chessboard_t *d = PG_GETARG_CHESSBOARD_P(1);
-  bool result = chess_board_cmp_internal(c, d) != 0;
-  PG_FREE_IF_COPY(c, 0);
-  PG_FREE_IF_COPY(d, 1);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(chess_board_cmp);
-Datum
-chess_board_cmp(PG_FUNCTION_ARGS)
-{
-  chessboard_t *c = PG_GETARG_CHESSBOARD_P(0);
-  chessboard_t *d = PG_GETARG_CHESSBOARD_P(1);
-  int result = chess_board_cmp_internal(c, d);
   PG_FREE_IF_COPY(c, 0);
   PG_FREE_IF_COPY(d, 1);
   PG_RETURN_INT32(result);

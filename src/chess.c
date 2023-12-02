@@ -281,6 +281,16 @@ chessgame_cast_to_text(PG_FUNCTION_ARGS)
   PG_RETURN_TEXT_P(out);
 }
 
+PG_FUNCTION_INFO_V1(chessgame_to_chessboard_list);
+Datum
+chessgame_to_chessboard_list(PG_FUNCTION_ARGS)
+{
+  chessgame_t *chessgame  = PG_GETARG_CHESSGAME_P(0);
+  chessboard_t **list = chessgame_to_chessboards(chessgame);
+  uint16_t length = list_length(list);
+  PG_RETURN_CHESSBOARD_LIST_P(list);
+}
+
 /******************************************************************************
  * Input/output functions for chessboard data type
 ******************************************************************************/
