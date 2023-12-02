@@ -6,6 +6,12 @@ DATABASE=chess
 chess:
 	$(SRC_DIR)/$(EXTENSION)
 
+
+small_tests: chess
+	psql $(DATABASE) < $(TEST_DIR)/small.sql
+	psql $(DATABASE) < $(TEST_DIR)/test.sql
+	dropdb $(DATABASE)
+
 small_tests: chess
 	psql $(DATABASE) < $(TEST_DIR)/small.sql
 	psql $(DATABASE) < $(TEST_DIR)/$(EXTENSION)-test.sql

@@ -220,6 +220,21 @@ chessgame_contains_chessboard(chessgame_t *chessgame, chessboard_t *chessboard, 
   return false;
 }
 
+static chessboard_t**
+chessgame_to_chessboards(chessgame_t *chessgame)
+{
+  SCL_Record record;
+  SCL_recordInit(record);
+  SCL_recordFromPGN(record, chessgame->pgn);
+  uint16_t length = SCL_recordLength(record);
+  chessboard_t **list = (chessboard_t **) palloc(length * sizeof(chessboard_t *));
+  for (uint16_t i = 0; i < length; i++)
+  {
+    list[i] = chessgame_to_chessboard(chessgame, i);
+  }
+  return list;
+}
+
 
 
 /******************************************************************************

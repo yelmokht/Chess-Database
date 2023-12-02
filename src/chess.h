@@ -57,5 +57,6 @@ static chessboard_t *FEN_to_chessboard(char *fen);
 static char *chessboard_to_FEN(chessboard_t *chessboard);
 static chessboard_t *chessgame_to_chessboard(chessgame_t *chessgame, uint16_t number_half_moves);
 static chessgame_t  *truncate_chessgame(chessgame_t *chessgame, uint16_t number_half_moves);
+static chessboard_t **chessgame_to_chessboards(chessgame_t *chessgame);
 
 #endif
