@@ -220,6 +220,8 @@ chessgame_contains_chessboard(chessgame_t *chessgame, chessboard_t *chessboard, 
   return false;
 }
 
+
+
 /******************************************************************************
  * Input/output for chessgame data type
 ******************************************************************************/
@@ -288,7 +290,7 @@ chessgame_to_chessboard_list(PG_FUNCTION_ARGS)
   chessgame_t *chessgame  = PG_GETARG_CHESSGAME_P(0);
   chessboard_t **list = chessgame_to_chessboards(chessgame);
   uint16_t length = list_length(list);
-  PG_RETURN_CHESSBOARD_LIST_P(list);
+  PG_RETURN_CHESSBOARD_LIST_P(list, length);
 }
 
 /******************************************************************************
