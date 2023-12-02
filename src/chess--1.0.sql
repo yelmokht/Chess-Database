@@ -25,6 +25,11 @@ CREATE OR REPLACE FUNCTION chessgame_send(chessgame)
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE OR REPLACE FUNCTION chessgame_to_chessboard_list(chessgame)
+  RETURNS chessboard[]
+  AS 'MODULE_PATHNAME', 'chessgame_to_chessboard_list'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE TYPE chessgame (
   internallength = variable,
   input          = chessgame_in,

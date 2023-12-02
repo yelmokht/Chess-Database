@@ -38,17 +38,6 @@ typedef struct {
 #define ChessboardListPGetDatum(X, length)  DatumGetChessboardListP(X, length)
 #define PG_RETURN_CHESSBOARD_LIST_P(x, length) return ChessboardListPGetDatum(x, length)
 
-Datum 
-return_chessboard_list(chessboard_t **list, uint16_t length)
-{
-  Datum result[length];
-  for (int i = 0; i < length; i++)
-  {
-    result[i] = PointerGetDatum(list[i]);
-  }
-  return result;
-}
-
 static chessgame_t *chessgame_make(const char *pgn);
 static chessboard_t *chessboard_make(const char *fen);
 static chessgame_t *PGN_to_chessgame(char *pgn);
@@ -57,6 +46,8 @@ static chessboard_t *FEN_to_chessboard(char *fen);
 static char *chessboard_to_FEN(chessboard_t *chessboard);
 static chessboard_t *chessgame_to_chessboard(chessgame_t *chessgame, uint16_t number_half_moves);
 static chessgame_t  *truncate_chessgame(chessgame_t *chessgame, uint16_t number_half_moves);
+static uint16_t list_length(chessgame_t *chessgame);
 static chessboard_t **chessgame_to_chessboards(chessgame_t *chessgame);
+Datum return_chessboard_list(chessboard_t **list, uint16_t length);
 
 #endif

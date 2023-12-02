@@ -7,7 +7,7 @@ chess:
 	$(SRC_DIR)/$(EXTENSION)
 
 
-small_tests: chess
+test: chess
 	psql $(DATABASE) < $(TEST_DIR)/small.sql
 	psql $(DATABASE) < $(TEST_DIR)/test.sql
 	dropdb $(DATABASE)

@@ -13,6 +13,7 @@
 
 #include "utils/builtins.h"
 #include "libpq/pqformat.h"
+#include "utils/array.h"
 #include "varatt.h"
 #include "smallchesslib.h"
 #include "chess.h"
@@ -220,13 +221,20 @@ chessgame_contains_chessboard(chessgame_t *chessgame, chessboard_t *chessboard, 
   return false;
 }
 
-static chessboard_t**
-chessgame_to_chessboards(chessgame_t *chessgame)
+static uint16_t
+list_length(chessgame_t *chessgame)
 {
   SCL_Record record;
   SCL_recordInit(record);
   SCL_recordFromPGN(record, chessgame->pgn);
   uint16_t length = SCL_recordLength(record);
+  return length;
+}
+
+static chessboard_t**
+chessgame_to_chessboards(chessgame_t *chessgame)
+{
+  uint16_t length = list_length(chessgame);
   chessboard_t **list = (chessboard_t **) palloc(length * sizeof(chessboard_t *));
   for (uint16_t i = 0; i < length; i++)
   {
@@ -235,7 +243,19 @@ chessgame_to_chessboards(chessgame_t *chessgame)
   return list;
 }
 
+Datum
+return_chessboard_list(chessboard_t **list, uint16_t length)
+{
+  Datum *result = (Datum*) palloc(sizeof(Datum) * length);
+  for (int i = 0; i < length; i++)
+  {
+    result[i] = PointerGetDatum(list[i]);
+  }
 
+Oid chessboard_oid = TypenameGetTypid("chessboard");
+  ArrayType *array = construct_array(result, length, chessboard_oid, sizeof(chessboard_t), true, 'i');
+  PG_RETURN_ARRAYTYPE_P(array);
+}
 
 /******************************************************************************
  * Input/output for chessgame data type
@@ -304,7 +324,7 @@ chessgame_to_chessboard_list(PG_FUNCTION_ARGS)
 {
   chessgame_t *chessgame  = PG_GETARG_CHESSGAME_P(0);
   chessboard_t **list = chessgame_to_chessboards(chessgame);
-  uint16_t length = list_length(list);
+  uint16_t length = list_length(chessgame);
   PG_RETURN_CHESSBOARD_LIST_P(list, length);
 }
 
