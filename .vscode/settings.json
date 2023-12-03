@@ -17,6 +17,5 @@
         "string_view": "c",
         "varatt.h": "c",
         "functional": "c"
-    },
-    "C_Cpp.default.compilerPath": "C:\\msys64\\ucrt64\\bin\\gcc.exe"
+    }
 }

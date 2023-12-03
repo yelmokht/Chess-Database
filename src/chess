@@ -17,5 +17,4 @@ else
     make && sudo make install
     createdb $dbname
     psql $dbname -c "CREATE EXTENSION $extensionname ;"
-
 fi

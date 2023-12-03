@@ -1,5 +1,5 @@
 SRC_DIR=src
-TEST_DIR=test
+SQL_DIR=test/sql
 EXTENSION=chess
 DATABASE=chess
 
@@ -8,19 +8,16 @@ chess:
 
 
 test: chess
-	psql $(DATABASE) < $(TEST_DIR)/small.sql
-	psql $(DATABASE) < $(TEST_DIR)/test.sql
-	dropdb $(DATABASE)
+	psql $(DATABASE) < $(SQL_DIR)/small.sql
+	psql $(DATABASE) < $(SQL_DIR)/test.sql
 
 small_tests: chess
-	psql $(DATABASE) < $(TEST_DIR)/small.sql
-	psql $(DATABASE) < $(TEST_DIR)/$(EXTENSION)-test.sql
-	dropdb $(DATABASE)
+	psql $(DATABASE) < $(SQL_DIR)/small.sql
+	psql $(DATABASE) < $(SQL_DIR)/$(EXTENSION)-test.sql
 
 large_tests: chess
-	psql $(DATABASE) < $(TEST_DIR)/Carlsen.sql
-	psql $(DATABASE) < $(TEST_DIR)/$(EXTENSION)-test.sql
-	dropdb $(DATABASE)
+	psql $(DATABASE) < $(SQL_DIR)/Carlsen.sql
+	psql $(DATABASE) < $(SQL_DIR)/$(EXTENSION)-test.sql
 
 clean:
 	rm -f $(SRC_DIR)/*.o $(SRC_DIR)/*.bc $(SRC_DIR)/*.so

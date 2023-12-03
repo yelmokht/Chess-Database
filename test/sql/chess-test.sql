@@ -19,8 +19,19 @@ SELECT current_setting('block_size');
 SELECT getBoard(game, 0) FROM games;
 \echo Test 2.2: SELECT getBoard(game, 1) FROM games;
 SELECT getBoard(game, 1) FROM games;
+SELECT getBoard(game, 2) FROM games;
+SELECT getBoard(game, 3) FROM games;
+SELECT getBoard(game, 4) FROM games;
+SELECT getBoard(game, 5) FROM games;
+SELECT getBoard(game, 6) FROM games;
 \echo Test 2.3: SELECT getBoard(game, 7) FROM games;
 SELECT getBoard(game, 7) FROM games;
+SELECT getBoard(game, 8) FROM games;
+SELECT getBoard(game, 9) FROM games;
+SELECT getBoard(game, 10) FROM games;
+SELECT getBoard(game, 11) FROM games;
+SELECT getBoard(game, 12) FROM games;
+SELECT getBoard(game, 13) FROM games;
 \echo Test 2.4: SELECT getBoard(game, 14) FROM games;
 SELECT getBoard(game, 14) FROM games;
 \echo Test 2.5: SELECT getBoard(game, 15) FROM games;
@@ -73,5 +84,3 @@ SELECT hasBoard(game, 'rnbqk2r/1p2bppp/p2ppn2/6B1/3NPP2/2N5/PPP3PP/R2QKB1R w KQk
 \echo
 \echo Test 7.1: SELECT count(*) FROM games WHERE hasBoard(game, 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', 10);
 SELECT count(*) FROM games WHERE hasBoard(game, 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', 10);
-
-CREATE INDEX idx_games_game ON games USING gin(game_tsv)
