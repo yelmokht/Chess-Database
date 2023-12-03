@@ -220,4 +220,75 @@ AS
         OPERATOR        5       >  ,
         FUNCTION        1       chess_opening_cmp(chessgame, chessgame);
 
+/******************************************************************************
+ * GIN comparison functions
+******************************************************************************/
+
+CREATE OR REPLACE FUNCTION chess_board_intersection(chessgame, chessgame)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION chess_board_contains(chessgame, chessgame)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION chess_board_contained_in(chessgame, chessgame)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION chess_board_eq(chessgame, chessgame)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
+ * GIN comparison operators
+******************************************************************************/
+
+CREATE OPERATOR && (
+  LEFTARG = chessgame, RIGHTARG = chessgame,
+  PROCEDURE = chess_board_intersection,
+  COMMUTATOR = &&, NEGATOR = ||
+);
+CREATE OPERATOR @> (
+  LEFTARG = chessgame, RIGHTARG = chessgame,
+  PROCEDURE = chess_board_contains,
+  COMMUTATOR = <@, NEGATOR = NOT >=
+);
+CREATE OPERATOR <@ (
+  LEFTARG = chessgame, RIGHTARG = chessgame,
+  PROCEDURE = chess_board_contained_in,
+  COMMUTATOR = @>, NEGATOR = NOT <@
+);
+CREATE OPERATOR = (
+  LEFTARG = chessgame, RIGHTARG = chessgame,
+  PROCEDURE = chess_board_eq,
+  COMMUTATOR = =, NEGATOR = <>
+);
+
+/******************************************************************************
+ * GIN support function
+******************************************************************************/
+
+CREATE OR REPLACE FUNCTION chess_board_cmp(chessgame, chessgame)
+  RETURNS integer
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
+ * GIN operator class
+******************************************************************************/
+
+CREATE OPERATOR CLASS chess_board_ops
+DEFAULT FOR TYPE chessgame USING gin
+AS
+        OPERATOR        1       &&  ,
+        OPERATOR        2       @>  ,
+        OPERATOR        3       <@  ,
+        OPERATOR        4       =   ,
+        FUNCTION        1       chess_board_cmp(chessgame, chessgame);
+
 /******************************************************************************/
