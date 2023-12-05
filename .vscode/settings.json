@@ -16,6 +16,12 @@
         "memutils.h": "c",
         "string_view": "c",
         "varatt.h": "c",
-        "functional": "c"
+        "functional": "c",
+        "random": "c",
+        "stratnum.h": "c",
+        "gin.h": "c",
+        "pg_type.h": "c",
+        "objectaddress.h": "c",
+        "array.h": "c"
     }
 }

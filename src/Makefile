@@ -6,7 +6,7 @@ OBJS = \
 	chess_gin.o
 
 EXTENSION   = chess
-DATA        = chess--1.0.sql chess.control chess_btree.control chess_gin.control
+DATA        = chess--1.0.sql
 HEADERS_chess = chess.h
 
 PG_CONFIG ?= pg_config

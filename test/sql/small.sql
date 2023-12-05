@@ -11,7 +11,5 @@ INSERT INTO games VALUES
 
 UPDATE games SET states = chessgame_to_chessboards(game);
 
--- CREATE INDEX index ON games USING GIN (chessgame_to_chessboards(game));
-
 INSERT INTO favoriteGames VALUES
 ('1.e4 c6 2.c4 d5 3.exd5 cxd5 4.cxd5 Nf6 5.Nc3 g6 6.Bc4 Bg7 7.Nf3 O-O ');

@@ -6,17 +6,12 @@ DATABASE=chess
 chess:
 	$(SRC_DIR)/$(EXTENSION)
 
-
-test: chess
-	psql $(DATABASE) < $(SQL_DIR)/small.sql
-	psql $(DATABASE) < $(SQL_DIR)/test.sql
-
 small_tests: chess
 	psql $(DATABASE) < $(SQL_DIR)/small.sql
 	psql $(DATABASE) < $(SQL_DIR)/$(EXTENSION)-test.sql
 
 large_tests: chess
-	psql $(DATABASE) < $(SQL_DIR)/Carlsen.sql
+	psql $(DATABASE) < $(SQL_DIR)/large.sql
 	psql $(DATABASE) < $(SQL_DIR)/$(EXTENSION)-test.sql
 
 clean:

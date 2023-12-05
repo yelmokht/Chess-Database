@@ -5,14 +5,7 @@
  *
  */
 
-#include <postgres.h>
-#include <float.h>
-#include <math.h>
-
-#include "fmgr.h"
-#include "utils/builtins.h"
-#include "libpq/pqformat.h"
-
+#include "postgres.h"
 #include "chess.h"
 
 #define opening(chessgame) (chessgame->pgn)

@@ -17,7 +17,6 @@
 #include "varatt.h"
 #include "smallchesslib.h"
 #include "chess.h"
-
 PG_MODULE_MAGIC;
 
 /******************************************************************************
@@ -221,6 +220,29 @@ chessgame_contains_chessboard(chessgame_t *chessgame, chessboard_t *chessboard, 
   return false;
 }
 
+static int
+chessgame_to_number(chessgame_t *chessgame)
+{
+  SCL_Record record;
+  SCL_recordInit(record);
+  SCL_recordFromPGN(record, chessgame->pgn);
+  return SCL_recordLength(record) + 1; //car on compte le 0
+}
+
+static ArrayType *
+chessgame_to_chessboards_internal(chessgame_t *chessgame)
+{
+  int number_half_moves = chessgame_to_number(chessgame);
+  chessboard_t **chessboards = (chessboard_t **) palloc(sizeof(chessboard_t *) * number_half_moves);
+
+  for (int i = 0; i < number_half_moves; i++) {
+    chessboards[i] = chessgame_to_chessboard(chessgame, i);
+  }
+
+  Oid chessboard_oid = TypenameGetTypid("chessboard");
+  return construct_array((Datum *) chessboards, number_half_moves, chessboard_oid, -1, false, 'i');
+}
+
 /******************************************************************************
  * Input/output for chessgame data type
 ******************************************************************************/
@@ -390,7 +412,6 @@ chessgame_to_chessboards(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(chessgame, 0);
   PG_RETURN_ARRAYTYPE_P(array);
 }
-
 
 /******************************************************************************
  * Functions and predicates
