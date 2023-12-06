@@ -218,7 +218,7 @@ AS
         OPERATOR        3       =  ,
         OPERATOR        4       >= ,
         OPERATOR        5       >  ,
-        FUNCTION        1       chess_opening_cmp (chessgame, chessgame);
+        FUNCTION        1       chess_opening_cmp(chessgame, chessgame);
 
 /******************************************************************************
  * GIN comparison functions

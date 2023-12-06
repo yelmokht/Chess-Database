@@ -55,8 +55,8 @@ static char *chessgame_to_PGN(chessgame_t *chessgame);
 static chessboard_t *FEN_to_chessboard(char *fen);
 static char *chessboard_to_FEN(chessboard_t *chessboard);
 static chessboard_t *chessgame_to_chessboard(chessgame_t *chessgame, uint16_t number_half_moves);
-static chessgame_t  *truncate_chessgame(chessgame_t *chessgame, uint16_t number_half_moves);
-static int chessgame_to_number(chessgame_t *chessgame);
+chessgame_t  *truncate_chessgame(chessgame_t *chessgame, uint16_t number_half_moves);
+int chessgame_to_number(chessgame_t *chessgame);
 static ArrayType *chessgame_to_chessboards_internal(chessgame_t *chessgame);
 
 #endif
