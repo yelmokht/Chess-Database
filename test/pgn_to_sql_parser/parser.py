@@ -18,7 +18,8 @@ def parse_pgns(data):
         if line[0] == '[':
             pass
         elif line == '\n' and game != "":
-            games.append(game)
+            if (len(game) < 1000):
+                games.append(game)
             game = ""
         else:
             game += line.strip() + " "
@@ -28,9 +29,8 @@ def parse_pgns(data):
 
 def write_to_sql(games, output_file):
     with open(os.path.join(SQL_FOLDER, output_file.replace('pgn', 'sql')), 'w') as f:
-        f.write("CREATE TABLE games (game chessgame, states chessboard[]);\n")
+        f.write("CREATE TABLE games (game chessgame);\n")
         f.write("CREATE TABLE favoriteGames (game chessgame);\n")
-        f.write("UPDATE games SET states = chessgame_to_chessboards(game);\n")
         f.write("INSERT INTO games VALUES\n")
         non_empty_games = [game.lstrip() for game in games if game.strip()]  # Remove empty and leading space from games
         for game in non_empty_games[:-1]:
