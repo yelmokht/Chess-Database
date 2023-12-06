@@ -226,7 +226,7 @@ chessgame_to_number(chessgame_t *chessgame)
   SCL_Record record;
   SCL_recordInit(record);
   SCL_recordFromPGN(record, chessgame->pgn);
-  return SCL_recordLength(record) + 1; //car on compte le 0
+  return SCL_recordLength(record);
 }
 
 static ArrayType *

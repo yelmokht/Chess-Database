@@ -17,11 +17,12 @@
 static int
 chess_opening_cmp_internal(chessgame_t *a, chessgame_t *b)
 {
-  if (opening(a) < opening(b))
+  //ereport(NOTICE, (errmsg("A: %s et B: %s", opening(a), opening(b))));
+  if (strcmp(opening(a), opening(b)) < 0)
   {
     return -1;
   }
-  if (opening(a) > opening(b))
+  if (strcmp(opening(a), opening(b)) > 0)
   {
     return 1;
   }
