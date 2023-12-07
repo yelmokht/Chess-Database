@@ -167,7 +167,7 @@ truncate_chessgame(chessgame_t *chessgame, uint16_t number_half_moves)
 static bool 
 compare_moves(chessgame_t *chessgame_1, chessgame_t *chessgame_2)
 {
-  return strstr(chessgame_1->pgn, chessgame_2->pgn) != NULL;
+  return (strstr(chessgame_1->pgn, chessgame_2->pgn) == chessgame_1->pgn);
 }
 
 /**
@@ -458,6 +458,18 @@ getFirstMoves(PG_FUNCTION_ARGS)
   * @param chessgame Pointer to the second chessgame
   * @return bool True if the first chessgame starts with the exact same set of moves as the second chessgame
 */
+PG_FUNCTION_INFO_V1(hasOpening);
+Datum
+hasOpening(PG_FUNCTION_ARGS)
+{
+  chessgame_t *chessgame_1 = PG_GETARG_CHESSGAME_P(0);
+  chessgame_t *chessgame_2 = PG_GETARG_CHESSGAME_P(1);
+  bool hasOpening = compare_moves(chessgame_1, chessgame_2);
+  PG_FREE_IF_COPY(chessgame_1, 0);
+  PG_FREE_IF_COPY(chessgame_2, 1);
+  PG_RETURN_BOOL(hasOpening);
+}
+
 
 /**
   * @brief Returns true if the chessgame contains the given board state in its first N half-moves.

@@ -3,8 +3,8 @@
 
 #define MAX_PGN_LENGTH 4096
 
-#include <stdint.h>
-#include "utils/array.h"
+#include <postgres.h>
+#include <utils/array.h>
 
 /**
  * @brief Structure containing all information representing a chess game state using SAN notation.
@@ -47,16 +47,5 @@ typedef struct {
 	} while(0)
 
 #define ARRISEMPTY(x) (ARRNELEMS(x) == 0)
-
-static chessgame_t *chessgame_make(const char *pgn);
-static chessboard_t *chessboard_make(const char *fen);
-static chessgame_t *PGN_to_chessgame(char *pgn);
-static char *chessgame_to_PGN(chessgame_t *chessgame);
-static chessboard_t *FEN_to_chessboard(char *fen);
-static char *chessboard_to_FEN(chessboard_t *chessboard);
-static chessboard_t *chessgame_to_chessboard(chessgame_t *chessgame, uint16_t number_half_moves);
-chessgame_t  *truncate_chessgame(chessgame_t *chessgame, uint16_t number_half_moves);
-int chessgame_to_number(chessgame_t *chessgame);
-static ArrayType *chessgame_to_chessboards_internal(chessgame_t *chessgame);
 
 #endif

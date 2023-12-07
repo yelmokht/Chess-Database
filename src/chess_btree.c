@@ -5,6 +5,7 @@
  *
  */
 
+#include <stdlib.h>
 #include "postgres.h"
 #include "chess.h"
 
@@ -17,12 +18,12 @@
 static int
 chess_opening_cmp_internal(chessgame_t *a, chessgame_t *b)
 {
-  //ereport(NOTICE, (errmsg("A: %s et B: %s", opening(a), opening(b))));
-  if (strcmp(opening(a), opening(b)) < 0)
+  int cmp_result = strcmp(opening(a), opening(b));
+  if (cmp_result < 0)
   {
     return -1;
   }
-  if (strcmp(opening(a), opening(b)) > 0)
+  if (cmp_result > 0)
   {
     return 1;
   }
@@ -113,24 +114,4 @@ chess_opening_cmp(PG_FUNCTION_ARGS)
   PG_RETURN_INT32(result);
 }
 
-PG_FUNCTION_INFO_V1(hasOpening);
-Datum
-hasOpening(PG_FUNCTION_ARGS)
-{
-  chessgame_t *chessgame_1 = PG_GETARG_CHESSGAME_P(0);
-  chessgame_t *chessgame_2 = PG_GETARG_CHESSGAME_P(1);
-  uint16_t number_half_moves_1 = chessgame_to_number(chessgame_1);
-  uint16_t number_half_moves_2 = chessgame_to_number(chessgame_2);
-  if (number_half_moves_1 < number_half_moves_2)
-  {
-    chessgame_2 = truncate_chessgame(chessgame_2, number_half_moves_1);
-  } else 
-  {
-    chessgame_1 = truncate_chessgame(chessgame_1, number_half_moves_2);
-  }
-  bool hasOpening = chess_opening_cmp_internal(chessgame_1, chessgame_2) == 0;
-  PG_FREE_IF_COPY(chessgame_1, 0);
-  PG_FREE_IF_COPY(chessgame_2, 1);
-  PG_RETURN_BOOL(hasOpening);
-}
 /*****************************************************************************/
