@@ -35,7 +35,6 @@ typedef struct {
 #define PG_RETURN_CHESSBOARD_P(x) return ChessboardPGetDatum(x)
 
 /* useful macros for accessing chessboard arrays */
-#define ARRPTR(x) ((chessboard_t **) ARR_DATA_PTR(x))
 #define ARRNELEMS(x) ArrayGetNItems(ARR_NDIM(x), ARR_DIMS(x))
 #define ARRISEMPTY(x) (ARRNELEMS(x) == 0)
 
