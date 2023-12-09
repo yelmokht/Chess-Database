@@ -224,22 +224,22 @@ AS
  * GIN comparison functions
 ******************************************************************************/
 
-CREATE OR REPLACE FUNCTION chess_board_overlap(chessboard, chessboard)
+CREATE OR REPLACE FUNCTION _chessboard_overlap(_chessboard, _chessboard)
   RETURNS boolean
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION chess_board_contains(chessboard, chessboard)
+CREATE OR REPLACE FUNCTION _chessboard_contains(_chessboard, _chessboard)
   RETURNS boolean
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION chess_board_contained(chessboard, chessboard)
+CREATE OR REPLACE FUNCTION _chessboard_contained(_chessboard, _chessboard)
   RETURNS boolean
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION chess_board_eq(chessboard, chessboard)
+CREATE OR REPLACE FUNCTION _chessboard_eq(_chessboard, _chessboard)
   RETURNS boolean
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -249,23 +249,23 @@ CREATE OR REPLACE FUNCTION chess_board_eq(chessboard, chessboard)
 ******************************************************************************/
 
 CREATE OPERATOR && (
-  LEFTARG = chessboard, RIGHTARG = chessboard,
-  PROCEDURE = chess_board_overlap,
+  LEFTARG = _chessboard, RIGHTARG = _chessboard,
+  PROCEDURE = _chessboard_overlap,
   COMMUTATOR = &&
 );
 CREATE OPERATOR @> (
-  LEFTARG = chessboard, RIGHTARG = chessboard,
-  PROCEDURE = chess_board_contains,
+  LEFTARG = _chessboard, RIGHTARG = _chessboard,
+  PROCEDURE = _chessboard_contains,
   COMMUTATOR = <@
 );
 CREATE OPERATOR <@ (
-  LEFTARG = chessboard, RIGHTARG = chessboard,
-  PROCEDURE = chess_board_contained,
+  LEFTARG = _chessboard, RIGHTARG = _chessboard,
+  PROCEDURE = _chessboard_contained,
   COMMUTATOR = @>
 );
 CREATE OPERATOR = (
-  LEFTARG = chessboard, RIGHTARG = chessboard,
-  PROCEDURE = chess_board_eq,
+  LEFTARG = _chessboard, RIGHTARG = _chessboard,
+  PROCEDURE = _chessboard_eq,
   COMMUTATOR = =, NEGATOR = <>
 );
 
@@ -273,7 +273,7 @@ CREATE OPERATOR = (
  * GIN support function
 ******************************************************************************/
 
-CREATE OR REPLACE FUNCTION chess_board_cmp(chessboard, chessboard)
+CREATE OR REPLACE FUNCTION chessboard_cmp(chessboard, chessboard)
   RETURNS integer
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -283,15 +283,16 @@ CREATE OR REPLACE FUNCTION chess_board_cmp(chessboard, chessboard)
 ******************************************************************************/
 
 CREATE OPERATOR CLASS chess_board_ops
-DEFAULT FOR TYPE chessboard USING gin
+DEFAULT FOR TYPE _chessboard USING gin
 AS
     OPERATOR        1       && ,
     OPERATOR        2       @> ,
     OPERATOR        3       <@ ,
     OPERATOR        4       =  ,
-    FUNCTION	      1	      chess_board_cmp (chessboard, chessboard),
+    FUNCTION	      1	      chessboard_cmp (chessboard, chessboard),
     FUNCTION	      2	      ginarrayextract (anyarray, internal, internal),
     FUNCTION	      3	      ginqueryarrayextract (anyarray, internal, int2, internal, internal, internal, internal),
-    FUNCTION	      4	      ginarrayconsistent (internal, int2, anyarray, int4, internal, internal, internal, internal)
+    FUNCTION	      4	      ginarrayconsistent (internal, int2, anyarray, int4, internal, internal, internal, internal),
+    STORAGE                 chessboard;
 
 /******************************************************************************/

@@ -22,6 +22,9 @@
         "gin.h": "c",
         "pg_type.h": "c",
         "objectaddress.h": "c",
-        "array.h": "c"
+        "array.h": "c",
+        "namespace.h": "c",
+        "lock.h": "c",
+        "primnodes.h": "c"
     }
 }

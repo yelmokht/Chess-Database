@@ -14,9 +14,11 @@
 #include "utils/builtins.h"
 #include "libpq/pqformat.h"
 #include "utils/array.h"
+#include "catalog/namespace.h"
 #include "varatt.h"
 #include "smallchesslib.h"
 #include "chess.h"
+
 PG_MODULE_MAGIC;
 
 /******************************************************************************
@@ -138,7 +140,7 @@ chessgame_to_chessboard(chessgame_t *chessgame, uint16_t number_half_moves)
   * @param number_half_moves Number of half-moves
   * @return *chessgame_t Pointer to the new truncated chessgame
 */
-chessgame_t * 
+static chessgame_t * 
 truncate_chessgame(chessgame_t *chessgame, uint16_t number_half_moves)
 {
   char delimeter = ' ';
@@ -220,7 +222,7 @@ chessgame_contains_chessboard(chessgame_t *chessgame, chessboard_t *chessboard, 
   return false;
 }
 
-int
+static int
 chessgame_to_number(chessgame_t *chessgame)
 {
   SCL_Record record;
@@ -395,21 +397,7 @@ Datum
 chessgame_to_chessboards(PG_FUNCTION_ARGS)
 {
   chessgame_t *chessgame = PG_GETARG_CHESSGAME_P(0);
-  ArrayType *array;
-  SCL_Record record;
-  SCL_recordInit(record);
-  SCL_recordFromPGN(record, chessgame->pgn);
-  int number_half_moves = SCL_recordLength(record) + 1; //car on compte le 0
-
-  chessboard_t **chessboards = (chessboard_t **) palloc(sizeof(chessboard_t *) * number_half_moves);
-
-  for (int i = 0; i < number_half_moves; i++) {
-    chessboards[i] = chessgame_to_chessboard(chessgame, i);
-  }
-
-  Oid chessboard_oid = TypenameGetTypid("chessboard");
-  array = construct_array((Datum *) chessboards, number_half_moves, chessboard_oid, -1, false, 'i');
-  PG_FREE_IF_COPY(chessgame, 0);
+  ArrayType *array = chessgame_to_chessboards_internal(chessgame);
   PG_RETURN_ARRAYTYPE_P(array);
 }
 
@@ -469,7 +457,6 @@ hasOpening(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(chessgame_2, 1);
   PG_RETURN_BOOL(hasOpening);
 }
-
 
 /**
   * @brief Returns true if the chessgame contains the given board state in its first N half-moves.

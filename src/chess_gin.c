@@ -24,174 +24,115 @@
  * GIN index functions to support the hasBoard predicate 
 ******************************************************************************/
 
-static bool
-chess_board_contains_internal(ArrayType *a, ArrayType *b)
-{
-	int	i = 0;
-	int j = 0;
-	int n = 0;
-	int na = ARRNELEMS(a);
-	int nb = ARRNELEMS(b);
-	int *da = ARRPTR(a);
-	int *db = ARRPTR(b);
-
-	while (i < na && j < nb)
-	{
-		if (da[i] < db[j])
-    	{
-      		i++;
-    	}
-		else if (da[i] == db[j])
-		{
-			n++;
-			i++;
-			j++;
-		}
-		else
-    	{
-      		break;
-    	}
-	}
-	
-	return (n == nb);
-}
-
-static bool
-chess_board_overlap_internal(ArrayType *a, ArrayType *b)
-{
-	int na = ARRNELEMS(a);
-	int nb = ARRNELEMS(b);
-	int *da = ARRPTR(a);
-	int *db = ARRPTR(b);
-	int i = 0;
-  int j = 0;
-	while (i < na && j < nb)
-	{
-		if (da[i] < db[j])
-    {
-      i++;
-    }
-		else if (da[i] == db[j])
-    {
-      return true;
-    }
-		else
-    {
-      j++;
-    }
-	}
-
-	return false;
-}
-
-static bool
-chess_board_eq_internal(ArrayType *a, ArrayType *b)
-{
-	int na = ARRNELEMS(a);
-	int nb = ARRNELEMS(b);
-	int *da = ARRPTR(a);
-	int *db = ARRPTR(b);
-	bool result = false;
-	if (na == nb)
-	{
-		result = true;
-		for (int n = 0; n < na; n++)
-		{
-			if (da[n] != db[n])
-			{
-				result = false;
-				break;
-			}
-		}
-	}
-}
-
 static int
-chess_board_cmp_internal(chessboard_t *a, chessboard_t *b)
+chessboard_cmp_internal(chessboard_t *a, chessboard_t *b)
 {
-  if (board(a) < board(b))
+	ereport(NOTICE,(errcode(ERRCODE_CHARACTER_NOT_IN_REPERTOIRE),errmsg("Board A: %s \n Board B: %s\n \n", board(a), board(b))));
+  if (strcmp(board(a), board(b)) < 0)
   {
     return -1;
   }
-  if (board(a) > board(b))
+  if (strcmp(board(a), board(b)) > 0)
   {
     return 1;
   }
   return 0;
 }
 
-/******************************************************************************/
-
-PG_FUNCTION_INFO_V1(chess_board_overlap);
-Datum
-chess_board_overlap(PG_FUNCTION_ARGS)
+static bool
+_chessboard_contains_internal(ArrayType *a, ArrayType *b)
 {
-  ArrayType *a = PG_GETARG_ARRAYTYPE_P_COPY(0);
-	ArrayType *b = PG_GETARG_ARRAYTYPE_P_COPY(1);
-	CHECKARRVALID(a);
-	CHECKARRVALID(b);
-	if (ARRISEMPTY(a) || ARRISEMPTY(b))
-  {
-    return false;
-  }
-	bool result = chess_board_overlap_internal(a, b);
-	pfree(a);
-	pfree(b);
-	PG_RETURN_BOOL(result);
+	chessboard_t **_chessboard_1 = ARRPTR(a);
+	chessboard_t **_chessboard_2 = ARRPTR(b);
+	for (int i = 0; i < ARRNELEMS(b); ++i) {
+		bool found = false;
+		for (int j = 0; j < ARRNELEMS(a); ++j) {
+			if (chessboard_cmp_internal(_chessboard_1[j], _chessboard_2[i]) == 0) {
+				found = true;
+				break;
+			}
+		}
+		if (!found) {
+			return false;
+		}
+	}
+	return true;
 }
 
-PG_FUNCTION_INFO_V1(chess_board_contains);
-Datum
-chess_board_contains(PG_FUNCTION_ARGS)
+static bool
+_chessboard_overlap_internal(ArrayType *a, ArrayType *b)
 {
-  	ArrayType *a = PG_GETARG_ARRAYTYPE_P_COPY(0);
-	ArrayType *b = PG_GETARG_ARRAYTYPE_P_COPY(1);
-	CHECKARRVALID(a);
-	CHECKARRVALID(b);
-	bool result = chess_board_contains_internal(a, b);
-	pfree(a);
-	pfree(b);
-	PG_RETURN_BOOL(result);
+	chessboard_t **_chessboard_1 = ARRPTR(a);
+	chessboard_t **_chessboard_2 = ARRPTR(b);	
+	for (int i = 0; i < ARRNELEMS(a); ++i) {
+		for (int j = 0; j < ARRNELEMS(b); ++j) {
+			if (chessboard_cmp_internal(_chessboard_1[i], _chessboard_2[j]) == 0) {
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
-PG_FUNCTION_INFO_V1(chess_board_contained);
-Datum
-chess_board_contained(PG_FUNCTION_ARGS)
+static bool
+_chessboard_eq_internal(ArrayType *a, ArrayType *b)
 {
-  ArrayType *a = PG_GETARG_ARRAYTYPE_P_COPY(0);
-	ArrayType *b = PG_GETARG_ARRAYTYPE_P_COPY(1);
-	CHECKARRVALID(a);
-	CHECKARRVALID(b);
-	bool result = chess_board_contains_internal(b, a);
-	pfree(a);
-	pfree(b);
-	PG_RETURN_BOOL(result);
+	chessboard_t **_chessboard_1 = ARRPTR(a);
+	chessboard_t **_chessboard_2 = ARRPTR(b);
+	if (ARRNELEMS(a) != ARRNELEMS(b)) {
+		return false;
+	}
+	for (int i = 0; i < ARRNELEMS(a); ++i) {
+		if (chessboard_cmp_internal(_chessboard_1[i], _chessboard_2[i]) != 0) {
+			return false;
+		}
+	}
+	return true;
 }
 
-PG_FUNCTION_INFO_V1(chess_board_eq);
+PG_FUNCTION_INFO_V1(_chessboard_overlap);
 Datum
-chess_board_eq(PG_FUNCTION_ARGS)
+_chessboard_overlap(PG_FUNCTION_ARGS)
 {
-	ArrayType *a = PG_GETARG_ARRAYTYPE_P_COPY(0);
-	ArrayType *b = PG_GETARG_ARRAYTYPE_P_COPY(1);
-	CHECKARRVALID(a);
-	CHECKARRVALID(b);
-  bool result = chess_board_eq_internal(a, b);
-	pfree(a);
-	pfree(b);
-	PG_RETURN_BOOL(result);
+	ArrayType *a = PG_GETARG_ARRAYTYPE_P(0);
+	ArrayType *b = PG_GETARG_ARRAYTYPE_P(1);
+	PG_RETURN_BOOL(_chessboard_overlap_internal(a, b));
 }
 
-PG_FUNCTION_INFO_V1(chess_board_cmp);
+PG_FUNCTION_INFO_V1(_chessboard_contains);
 Datum
-chess_board_cmp(PG_FUNCTION_ARGS)
+_chessboard_contains(PG_FUNCTION_ARGS)
 {
-  chessboard_t *c = PG_GETARG_CHESSBOARD_P(0);
-  chessboard_t *d = PG_GETARG_CHESSBOARD_P(1);
-  int result = chess_board_cmp_internal(c, d);
-  PG_FREE_IF_COPY(c, 0);
-  PG_FREE_IF_COPY(d, 1);
-  PG_RETURN_INT32(result);
+	ArrayType *a = PG_GETARG_ARRAYTYPE_P(0);
+	ArrayType *b = PG_GETARG_ARRAYTYPE_P(1);
+	PG_RETURN_BOOL(_chessboard_contains_internal(a, b));
+}
+
+PG_FUNCTION_INFO_V1(_chessboard_contained);
+Datum
+_chessboard_contained(PG_FUNCTION_ARGS)
+{
+	ArrayType *a = PG_GETARG_ARRAYTYPE_P(0);
+	ArrayType *b = PG_GETARG_ARRAYTYPE_P(1);
+	PG_RETURN_BOOL(_chessboard_contains_internal(b, a)); 
+}
+
+PG_FUNCTION_INFO_V1(_chessboard_eq);
+Datum
+_chessboard_eq(PG_FUNCTION_ARGS)
+{
+	ArrayType *a = PG_GETARG_ARRAYTYPE_P(0);
+	ArrayType *b = PG_GETARG_ARRAYTYPE_P(1);
+	PG_RETURN_BOOL(_chessboard_eq_internal(a, b));	
+}
+
+PG_FUNCTION_INFO_V1(chessboard_cmp);
+Datum
+chessboard_cmp(PG_FUNCTION_ARGS)
+{
+	chessboard_t *a = PG_GETARG_CHESSBOARD_P(0);
+	chessboard_t *b = PG_GETARG_CHESSBOARD_P(1);
+	PG_RETURN_INT32(chessboard_cmp_internal(a, b));
 }
 
 /*****************************************************************************/
