@@ -55,23 +55,23 @@ SELECT hasOpening(game, '1.e1 c1') FROM games;
 \echo Test 4.5: SELECT hasOpening(game, '1.e4 ') FROM games;
 SELECT hasOpening(game, '1.e4 ') FROM games;
 
-\echo Test 5: hasBoard
+\echo Test 5: hasboard
 
-\echo Test 5.1: SELECT hasBoard(game, 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', 0) FROM games;
-SELECT hasBoard(game, 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', 0) FROM games;
-\echo Test 5.2: SELECT hasBoard(game, 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1', 1) FROM games;
-SELECT hasBoard(game, 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1', 1) FROM games;
-\echo Test 5.3: SELECT hasBoard(game, 'rnbqkbnr/pp2pppp/8/3P4/8/8/PP1P1PPP/RNBQKBNR b KQkq - 0 4', 7) FROM games;
-SELECT hasBoard(game, 'rnbqkbnr/pp2pppp/8/3P4/8/8/PP1P1PPP/RNBQKBNR b KQkq - 0 4', 7) FROM games;
-\echo Test 5.4: SELECT hasBoard(game, 'rnbqk2r/1p2bppp/p2ppn2/6B1/3NPP2/2N5/PPP3PP/R2QKB1R w KQkq - 1 8', 14) FROM games;
-SELECT hasBoard(game, 'rnbqk2r/1p2bppp/p2ppn2/6B1/3NPP2/2N5/PPP3PP/R2QKB1R w KQkq - 1 8', 14) FROM games;
-\echo Test 5.5: SELECT hasBoard(game, 'rnbqk2r/1p2bppp/p2ppn2/6B1/3NPP2/2N5/PPP3PP/R2QKB1R w KQkq - 1 8', 15) FROM games;
-SELECT hasBoard(game, 'rnbqk2r/1p2bppp/p2ppn2/6B1/3NPP2/2N5/PPP3PP/R2QKB1R w KQkq - 1 8', 15) FROM games;
+\echo Test 5.1: SELECT hasboard(game, 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', 0) FROM games;
+SELECT hasboard(game, 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', 0) FROM games;
+\echo Test 5.2: SELECT hasboard(game, 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1', 1) FROM games;
+SELECT hasboard(game, 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1', 1) FROM games;
+\echo Test 5.3: SELECT hasboard(game, 'rnbqkbnr/pp2pppp/8/3P4/8/8/PP1P1PPP/RNBQKBNR b KQkq - 0 4', 7) FROM games;
+SELECT hasboard(game, 'rnbqkbnr/pp2pppp/8/3P4/8/8/PP1P1PPP/RNBQKBNR b KQkq - 0 4', 7) FROM games;
+\echo Test 5.4: SELECT hasboard(game, 'rnbqk2r/1p2bppp/p2ppn2/6B1/3NPP2/2N5/PPP3PP/R2QKB1R w KQkq - 1 8', 14) FROM games;
+SELECT hasboard(game, 'rnbqk2r/1p2bppp/p2ppn2/6B1/3NPP2/2N5/PPP3PP/R2QKB1R w KQkq - 1 8', 14) FROM games;
+\echo Test 5.5: SELECT hasboard(game, 'rnbqk2r/1p2bppp/p2ppn2/6B1/3NPP2/2N5/PPP3PP/R2QKB1R w KQkq - 1 8', 15) FROM games;
+SELECT hasboard(game, 'rnbqk2r/1p2bppp/p2ppn2/6B1/3NPP2/2N5/PPP3PP/R2QKB1R w KQkq - 1 8', 15) FROM games;
 
-\echo Test 6: hasOpening and hasBoard
+\echo Test 6: hasOpening and hasboard
 
 \echo Test 6.1: without btree index
-SELECT count(*) FROM games WHERE hasBoard(game, 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', 10);
+SELECT count(*) FROM games WHERE hasboard(game, 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', 10);
 \echo Test 6.2: with btree index
 SET enable_seqscan = off;
 CREATE INDEX games_game_btree_idx ON games USING btree(game);
@@ -80,17 +80,18 @@ EXPLAIN ANALYZE SELECT count(*) FROM games WHERE hasopening(game, '1.e4 c6 2.c4 
 DROP INDEX games_game_btree_idx;
 SET enable_seqscan = on;
 
-\echo Test 7: hasBoard
+\echo Test 7: hasboard
 
 \echo Test 7.1: without gin index
-EXPLAIN ANALYZE SELECT count(*) FROM games WHERE hasBoard(game, 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', 10);
+EXPLAIN ANALYZE SELECT count(*) FROM games WHERE hasboard(game, 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', 10);
 \echo Test 7.2: with gin index
 SET enable_seqscan = off;
 CREATE INDEX games_game_gin_idx ON games USING gin(chessgame_to_chessboards(game)) WITH (fastupdate = on);
 VACUUM ANALYZE games;
-EXPLAIN ANALYZE SELECT count(*) FROM games WHERE hasBoard(game, 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', 10);
+EXPLAIN ANALYZE SELECT count(*) FROM games WHERE hasboard(game, 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', 10);
+EXPLAIN ANALYZE SELECT count(*) FROM games WHERE hasboard2(game, 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', 10); -- don't use the last parameter
 SET enable_seqscan = on;
 
-\echo Test 8: Display chessgame and chessboards
-CREATE TABLE g AS (SELECT * FROM games, chessgame_to_chessboards(game) AS chessboards);
-select jsonb_pretty(to_jsonb(g)) from g;
+-- \echo Test 8: Display chessgame and chessboards
+-- CREATE TABLE g AS (SELECT * FROM games, chessgame_to_chessboards(game) AS chessboards);
+-- select jsonb_pretty(to_jsonb(g)) from g;

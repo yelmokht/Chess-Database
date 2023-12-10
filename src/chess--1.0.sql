@@ -146,6 +146,13 @@ CREATE FUNCTION hasBoard(chessgame, chessboard, integer)
   AS 'MODULE_PATHNAME', 'hasBoard'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION hasBoard2(a chessgame, b chessboard, c integer)
+  RETURNS boolean
+  AS $$
+    SELECT chessgame_to_chessboards(a) @> ARRAY[b];
+
+$$ IMMUTABLE LANGUAGE sql;
+
 /******************************************************************************
  * B-Tree comparison functions
 ******************************************************************************/
