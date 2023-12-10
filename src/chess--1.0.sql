@@ -109,6 +109,11 @@ CREATE FUNCTION chessboard(cstring)
  * Function for indexing
 ******************************************************************************/
 
+CREATE FUNCTION chessgame_truncated(chessgame, chessgame)
+  RETURNS chessgame
+  AS 'MODULE_PATHNAME', 'chessgame_truncated'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION chessgame_to_chessboards(chessgame)
   RETURNS chessboard[]
   AS 'MODULE_PATHNAME', 'chessgame_to_chessboards'
@@ -127,16 +132,21 @@ CREATE FUNCTION getFirstMoves(chessgame, integer)
   RETURNS chessgame
   AS 'MODULE_PATHNAME', 'getFirstMoves'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION hasOpening(chessgame, chessgame)
+  
+CREATE OR REPLACE FUNCTION hasOpening(a chessgame, b chessgame)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'hasOpening'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  AS $$
+  BEGIN
+    RETURN a > b;
+  END;
+  $$ IMMUTABLE LANGUAGE plpgsql;
 
-CREATE FUNCTION hasBoard(chessgame, chessboard, integer)
+
+CREATE FUNCTION hasBoard(a chessgame, b chessboard, c integer)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'hasBoard'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  AS $$
+    SELECT chessgame_to_chessboards(a) = ARRAY[b];
+  $$ IMMUTABLE LANGUAGE sql ;
 
 /******************************************************************************
  * B-Tree comparison functions
@@ -163,6 +173,11 @@ CREATE OR REPLACE FUNCTION chess_opening_gt(chessgame, chessgame)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION chess_opening_ge(chessgame, chessgame)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION chess_opening_like(chessgame, chessgame)
   RETURNS boolean
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -197,6 +212,12 @@ CREATE OPERATOR > (
   COMMUTATOR = <, NEGATOR = <=
 );
 
+CREATE OPERATOR ~~ (
+  LEFTARG = chessgame, RIGHTARG = chessgame,
+  PROCEDURE = chess_opening_like,
+  COMMUTATOR = ~~, NEGATOR = !~~
+);
+
 /******************************************************************************
  * B-Tree support function
 ******************************************************************************/
@@ -218,6 +239,7 @@ AS
         OPERATOR        3       =  ,
         OPERATOR        4       >= ,
         OPERATOR        5       >  ,
+        OPERATOR        6       ~~ ,
         FUNCTION        1       chess_opening_cmp(chessgame, chessgame);
 
 /******************************************************************************

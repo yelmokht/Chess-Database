@@ -102,6 +102,19 @@ chess_opening_gt(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
+PG_FUNCTION_INFO_V1(chess_opening_like);
+Datum
+chess_opening_like(PG_FUNCTION_ARGS)
+{
+  chessgame_t *c = PG_GETARG_CHESSGAME_P(0);
+  chessgame_t *d = PG_GETARG_CHESSGAME_P(1);
+
+  bool result = chess_opening_cmp_internal(chessgame_truncated_internal(c, chessgame_to_number_internal(d)), d) == 0;
+  PG_FREE_IF_COPY(c, 0);
+  PG_FREE_IF_COPY(d, 1);
+  PG_RETURN_BOOL(result);
+}
+
 PG_FUNCTION_INFO_V1(chess_opening_cmp);
 Datum
 chess_opening_cmp(PG_FUNCTION_ARGS)

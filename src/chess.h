@@ -38,4 +38,7 @@ typedef struct {
 #define ARRNELEMS(x) ArrayGetNItems(ARR_NDIM(x), ARR_DIMS(x))
 #define ARRISEMPTY(x) (ARRNELEMS(x) == 0)
 
+ArrayType *chessgame_to_chessboards_internal(chessgame_t *chessgame);
+chessgame_t *chessgame_truncated_internal(chessgame_t *chessgame, uint16_t number_half_moves);
+int chessgame_to_number_internal(chessgame_t *chessgame);
 #endif
