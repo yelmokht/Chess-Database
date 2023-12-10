@@ -42,18 +42,18 @@ SELECT getFirstMoves(game, 15) FROM games;
 \echo Test 3.5: SELECT getFirstMoves(game, 100) FROM games;
 SELECT getFirstMoves(game, 100) FROM games;
 
-\echo Test 4: hasOpening2
+\echo Test 4: hasOpening
 
-\echo Test 4.1: SELECT hasOpening2(game, '1.e4 e6 2.d4 d5 3.Nd2 Nf6 4.e5 Nfd7 5.f4 c5 6.c3 Nc6 7.Ndf3 cxd4 ') FROM games;
-SELECT hasOpening2(game, '1.e4 e6 2.d4 d5 3.Nd2 Nf6 4.e5 Nfd7 5.f4 c5 6.c3 Nc6 7.Ndf3 cxd4 ') FROM games;
-\echo Test 4.2: SELECT hasOpening2(game, '1.e4 c6 2.c4 d5 3.exd5 cxd5 4.cxd5 Nf6 5.Nc3 g6 6.Bc4 Bg7 7.Nf3 O-O ') FROM games;
-SELECT hasOpening2(game, '1.e4 c6 2.c4 d5 3.exd5 cxd5 4.cxd5 Nf6 5.Nc3 g6 6.Bc4 Bg7 7.Nf3 O-O ') FROM games;
-\echo Test 4.3: SELECT hasOpening2(game, '1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 a6 6.Bg5 e6 7.f4 Be7 ') FROM games;
-SELECT hasOpening2(game, '1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 a6 6.Bg5 e6 7.f4 Be7 ') FROM games;
-\echo Test 4.4: SELECT hasOpening2(game, '1.e1 c1') FROM games;
-SELECT hasOpening2(game, '1.e1 c1') FROM games;
-\echo Test 4.5: SELECT hasOpening2(game, '1.e4 ') FROM games;
-SELECT hasOpening2(game, '1.e4 ') FROM games;
+\echo Test 4.1: SELECT hasOpening(game, '1.e4 e6 2.d4 d5 3.Nd2 Nf6 4.e5 Nfd7 5.f4 c5 6.c3 Nc6 7.Ndf3 cxd4 ') FROM games;
+SELECT hasOpening(game, '1.e4 e6 2.d4 d5 3.Nd2 Nf6 4.e5 Nfd7 5.f4 c5 6.c3 Nc6 7.Ndf3 cxd4 ') FROM games;
+\echo Test 4.2: SELECT hasOpening(game, '1.e4 c6 2.c4 d5 3.exd5 cxd5 4.cxd5 Nf6 5.Nc3 g6 6.Bc4 Bg7 7.Nf3 O-O ') FROM games;
+SELECT hasOpening(game, '1.e4 c6 2.c4 d5 3.exd5 cxd5 4.cxd5 Nf6 5.Nc3 g6 6.Bc4 Bg7 7.Nf3 O-O ') FROM games;
+\echo Test 4.3: SELECT hasOpening(game, '1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 a6 6.Bg5 e6 7.f4 Be7 ') FROM games;
+SELECT hasOpening(game, '1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 a6 6.Bg5 e6 7.f4 Be7 ') FROM games;
+\echo Test 4.4: SELECT hasOpening(game, '1.e1 c1') FROM games;
+SELECT hasOpening(game, '1.e1 c1') FROM games;
+\echo Test 4.5: SELECT hasOpening(game, '1.e4 ') FROM games;
+SELECT hasOpening(game, '1.e4 ') FROM games;
 
 \echo Test 5: hasboard
 
@@ -68,7 +68,7 @@ SELECT hasboard(game, 'rnbqk2r/1p2bppp/p2ppn2/6B1/3NPP2/2N5/PPP3PP/R2QKB1R w KQk
 \echo Test 5.5: SELECT hasboard(game, 'rnbqk2r/1p2bppp/p2ppn2/6B1/3NPP2/2N5/PPP3PP/R2QKB1R w KQkq - 1 8', 15) FROM games;
 SELECT hasboard(game, 'rnbqk2r/1p2bppp/p2ppn2/6B1/3NPP2/2N5/PPP3PP/R2QKB1R w KQkq - 1 8', 15) FROM games;
 
-\echo Test 6: hasOpening2 and hasboard
+\echo Test 6: hasOpening and hasboard
 
 \echo Test 6.1: without btree index
 SELECT count(*) FROM games WHERE hasboard(game, 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', 10);
@@ -76,7 +76,7 @@ SELECT count(*) FROM games WHERE hasboard(game, 'rnbqkbnr/pppppppp/8/8/8/8/PPPPP
 SET enable_seqscan = off;
 CREATE INDEX games_game_btree_idx ON games USING btree(game);
 VACUUM ANALYZE games;
-EXPLAIN ANALYZE SELECT count(*) FROM games WHERE hasOpening2(game, '1.e4 c6 2.c4 d5 3.exd5 cxd5 ');
+EXPLAIN ANALYZE SELECT count(*) FROM games WHERE hasOpening(game, '1.e4 c6 2.c4 d5 3.exd5 cxd5 ');
 DROP INDEX games_game_btree_idx;
 SET enable_seqscan = on;
 
