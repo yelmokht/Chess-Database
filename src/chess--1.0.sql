@@ -131,14 +131,17 @@ CREATE FUNCTION getFirstMoves(chessgame, integer)
   RETURNS chessgame
   AS 'MODULE_PATHNAME', 'getFirstMoves'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-  
-CREATE OR REPLACE FUNCTION hasOpening(a chessgame, b chessgame)
+
+CREATE FUNCTION hasOpening(chessgame, chessgame)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'hasOpening'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION hasOpening2(a chessgame, b chessgame)
   RETURNS boolean
   AS $$
-  BEGIN
-    RETURN a LIKE b;
-  END;
-  $$ IMMUTABLE LANGUAGE plpgsql;
+    SELECT a LIKE b;
+  $$ IMMUTABLE LANGUAGE sql;
 
 
 CREATE FUNCTION hasBoard(chessgame, chessboard, integer)
@@ -150,7 +153,6 @@ CREATE FUNCTION hasBoard2(a chessgame, b chessboard, c integer)
   RETURNS boolean
   AS $$
     SELECT chessgame_to_chessboards(a) @> ARRAY[b];
-
 $$ IMMUTABLE LANGUAGE sql;
 
 /******************************************************************************
