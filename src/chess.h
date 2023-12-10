@@ -14,12 +14,6 @@ typedef struct {
   char pgn[FLEXIBLE_ARRAY_MEMBER];
 } chessgame_t;
 
-/* fmgr macros chessgame type */
-#define DatumGetChessgameP(X)  ((chessgame_t *) DatumGetPointer(X))
-#define ChessgamePGetDatum(X)  PointerGetDatum(X)
-#define PG_GETARG_CHESSGAME_P(n) DatumGetChessgameP(PG_GETARG_DATUM(n))
-#define PG_RETURN_CHESSGAME_P(x) return ChessgamePGetDatum(x)
-
 /**
  * @brief Structure containing all information representing a chess board state using FEN notation.
  */
@@ -27,6 +21,12 @@ typedef struct {
   int32 length;
   char fen[FLEXIBLE_ARRAY_MEMBER];
 } chessboard_t;
+
+/* fmgr macros chessgame type */
+#define DatumGetChessgameP(X)  ((chessgame_t *) DatumGetPointer(X))
+#define ChessgamePGetDatum(X)  PointerGetDatum(X)
+#define PG_GETARG_CHESSGAME_P(n) DatumGetChessgameP(PG_GETARG_DATUM(n))
+#define PG_RETURN_CHESSGAME_P(x) return ChessgamePGetDatum(x)
 
 /* fmgr macros chessboard type */
 #define DatumGetChessboardP(X) ((chessboard_t *) DatumGetPointer(X))

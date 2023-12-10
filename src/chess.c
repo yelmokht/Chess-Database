@@ -234,11 +234,23 @@ chessgame_to_number(chessgame_t *chessgame)
 static ArrayType *
 chessgame_to_chessboards_internal(chessgame_t *chessgame)
 {
-  int number_half_moves = chessgame_to_number(chessgame);
-  chessboard_t **chessboards = (chessboard_t **) palloc(sizeof(chessboard_t *) * number_half_moves);
-
-  for (int i = 0; i < number_half_moves; i++) {
-    chessboards[i] = chessgame_to_chessboard(chessgame, i);
+  uint16_t number_half_moves = chessgame_to_number(chessgame);
+  chessboard_t **chessboards = (chessboard_t **) palloc(sizeof(chessboard_t *) * (number_half_moves + 1)); // +1 for the initial board
+  SCL_Record record;
+  SCL_Board board;
+  SCL_recordInit(record);
+  SCL_boardInit(board);
+  SCL_recordFromPGN(record, chessgame->pgn);
+  
+  for (uint16_t i = 0; i < number_half_moves; i++) {
+    uint8_t s0, s1;
+    char p;
+    char *fen = (char *) malloc(sizeof(char) * SCL_FEN_MAX_LENGTH);
+    SCL_boardToFEN(board, fen);
+    chessboards[i] = FEN_to_chessboard(fen);
+    SCL_recordGetMove(record,i,&s0,&s1,&p);
+    SCL_boardMakeMove(board,s0,s1,p);
+    free(fen);
   }
 
   Oid chessboard_oid = TypenameGetTypid("chessboard");
