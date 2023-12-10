@@ -1,0 +1,459 @@
+CREATE EXTENSION
+psql chess < test/sql/small.sql
+CREATE TABLE
+INSERT 0 5
+psql chess < test/sql/chess-test.sql
+Timing is on.
+Test 0: SELECT * FROM games;
+                                 game                                  
+-----------------------------------------------------------------------
+ 1.e4 e6 2.d4 d5 3.Nd2 Nf6 4.e5 Nfd7 5.f4 c5 6.c3 Nc6 7.Ndf3 cxd4 
+ 1.e4 e6 2.d4 d5 3.Nd2 c5 4.exd5 Qxd5 5.Ngf3 cxd4 6.Bc4 Qd6 7.O-O Nf6 
+ 1.e4 c6 2.c4 d5 3.exd5 cxd5 4.cxd5 Nf6 5.Nc3 g6 6.Bc4 Bg7 7.Nf3 O-O 
+ 1.e4 c6 2.c4 d5 3.exd5 cxd5 4.cxd5 Nf6 5.Nc3 Nxd5 6.d4 Nc6 7.Nf3 e6 
+ 1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 a6 6.Bg5 e6 7.f4 Be7 
+(5 rows)
+
+Time: 1.398 ms
+Test 1: Size of data types
+Test 1.1: Size of each game - SELECT game, pg_size_pretty(pg_column_size(game)::bigint) AS game_size FROM games;
+                                 game                                  | game_size 
+-----------------------------------------------------------------------+-----------
+ 1.e4 e6 2.d4 d5 3.Nd2 Nf6 4.e5 Nfd7 5.f4 c5 6.c3 Nc6 7.Ndf3 cxd4      | 70 bytes
+ 1.e4 e6 2.d4 d5 3.Nd2 c5 4.exd5 Qxd5 5.Ngf3 cxd4 6.Bc4 Qd6 7.O-O Nf6  | 74 bytes
+ 1.e4 c6 2.c4 d5 3.exd5 cxd5 4.cxd5 Nf6 5.Nc3 g6 6.Bc4 Bg7 7.Nf3 O-O   | 73 bytes
+ 1.e4 c6 2.c4 d5 3.exd5 cxd5 4.cxd5 Nf6 5.Nc3 Nxd5 6.d4 Nc6 7.Nf3 e6   | 73 bytes
+ 1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 a6 6.Bg5 e6 7.f4 Be7      | 70 bytes
+(5 rows)
+
+Time: 0.342 ms
+Test 1.2: Size of all the games in the column game - SELECT pg_size_pretty(SUM(pg_column_size(game))) AS game_column_size FROM games;
+ game_column_size 
+------------------
+ 360 bytes
+(1 row)
+
+Time: 0.267 ms
+Test 1.3: Size of the games table - SELECT pg_size_pretty(pg_total_relation_size(games)) AS games_size;
+ games_size 
+------------
+ 8192 bytes
+(1 row)
+
+Time: 0.217 ms
+Test 1.4: Size of a single block in PostgreSQL - SELECT current_setting(block_size);
+ current_setting 
+-----------------
+ 8192
+(1 row)
+
+Time: 0.126 ms
+Test 2: getBoard
+Test 2.1: SELECT getBoard(game, 0) FROM games;
+                         getboard                         
+----------------------------------------------------------
+ rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+ rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+ rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+ rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+ rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+(5 rows)
+
+Time: 0.419 ms
+Test 2.2: SELECT getBoard(game, 1) FROM games;
+                          getboard                           
+-------------------------------------------------------------
+ rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1
+ rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1
+ rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1
+ rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1
+ rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1
+(5 rows)
+
+Time: 0.400 ms
+Test 2.3: SELECT getBoard(game, 7) FROM games;
+                            getboard                             
+-----------------------------------------------------------------
+ rnbqkb1r/ppp2ppp/4pn2/3pP3/3P4/8/PPPN1PPP/R1BQKBNR b KQkq - 0 4
+ rnbqkbnr/pp3ppp/4p3/2pP4/3P4/8/PPPN1PPP/R1BQKBNR b KQkq - 0 4
+ rnbqkbnr/pp2pppp/8/3P4/8/8/PP1P1PPP/RNBQKBNR b KQkq - 0 4
+ rnbqkbnr/pp2pppp/8/3P4/8/8/PP1P1PPP/RNBQKBNR b KQkq - 0 4
+ rnbqkbnr/pp2pppp/3p4/8/3NP3/8/PPP2PPP/RNBQKB1R b KQkq - 0 4
+(5 rows)
+
+Time: 0.404 ms
+Test 2.4: SELECT getBoard(game, 14) FROM games;
+                               getboard                               
+----------------------------------------------------------------------
+ r1bqkb1r/pp1n1ppp/2n1p3/3pP3/3p1P2/2P2N2/PP4PP/R1BQKBNR w KQkq - 0 8
+ rnb1kb1r/pp3ppp/3qpn2/8/2Bp4/5N2/PPPN1PPP/R1BQ1RK1 w kq - 4 8
+ rnbq1rk1/pp2ppbp/5np1/3P4/2B5/2N2N2/PP1P1PPP/R1BQK2R w KQ - 4 8
+ r1bqkb1r/pp3ppp/2n1p3/3n4/3P4/2N2N2/PP3PPP/R1BQKB1R w KQkq - 0 8
+ rnbqk2r/1p2bppp/p2ppn2/6B1/3NPP2/2N5/PPP3PP/R2QKB1R w KQkq - 1 8
+(5 rows)
+
+Time: 0.399 ms
+Test 2.5: SELECT getBoard(game, 15) FROM games;
+                               getboard                               
+----------------------------------------------------------------------
+ r1bqkb1r/pp1n1ppp/2n1p3/3pP3/3p1P2/2P2N2/PP4PP/R1BQKBNR w KQkq - 0 8
+ rnb1kb1r/pp3ppp/3qpn2/8/2Bp4/5N2/PPPN1PPP/R1BQ1RK1 w kq - 4 8
+ rnbq1rk1/pp2ppbp/5np1/3P4/2B5/2N2N2/PP1P1PPP/R1BQK2R w KQ - 4 8
+ r1bqkb1r/pp3ppp/2n1p3/3n4/3P4/2N2N2/PP3PPP/R1BQKB1R w KQkq - 0 8
+ rnbqk2r/1p2bppp/p2ppn2/6B1/3NPP2/2N5/PPP3PP/R2QKB1R w KQkq - 1 8
+(5 rows)
+
+Time: 0.308 ms
+Test 2.6: SELECT getBoard(game, 100) FROM games;
+                               getboard                               
+----------------------------------------------------------------------
+ r1bqkb1r/pp1n1ppp/2n1p3/3pP3/3p1P2/2P2N2/PP4PP/R1BQKBNR w KQkq - 0 8
+ rnb1kb1r/pp3ppp/3qpn2/8/2Bp4/5N2/PPPN1PPP/R1BQ1RK1 w kq - 4 8
+ rnbq1rk1/pp2ppbp/5np1/3P4/2B5/2N2N2/PP1P1PPP/R1BQK2R w KQ - 4 8
+ r1bqkb1r/pp3ppp/2n1p3/3n4/3P4/2N2N2/PP3PPP/R1BQKB1R w KQkq - 0 8
+ rnbqk2r/1p2bppp/p2ppn2/6B1/3NPP2/2N5/PPP3PP/R2QKB1R w KQkq - 1 8
+(5 rows)
+
+Time: 0.343 ms
+Test 3: getFirstMoves
+Test 3.1: SELECT getFirstMoves(game, 1) FROM games;
+ getfirstmoves 
+---------------
+ 1.e4 
+ 1.e4 
+ 1.e4 
+ 1.e4 
+ 1.e4 
+(5 rows)
+
+Time: 0.180 ms
+Test 3.2: SELECT getFirstMoves(game, 7) FROM games;
+            getfirstmoves            
+-------------------------------------
+ 1.e4 e6 2.d4 d5 3.Nd2 Nf6 4.e5 
+ 1.e4 e6 2.d4 d5 3.Nd2 c5 4.exd5 
+ 1.e4 c6 2.c4 d5 3.exd5 cxd5 4.cxd5 
+ 1.e4 c6 2.c4 d5 3.exd5 cxd5 4.cxd5 
+ 1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 
+(5 rows)
+
+Time: 0.304 ms
+Test 3.3: SELECT getFirstMoves(game, 14) FROM games;
+                             getfirstmoves                             
+-----------------------------------------------------------------------
+ 1.e4 e6 2.d4 d5 3.Nd2 Nf6 4.e5 Nfd7 5.f4 c5 6.c3 Nc6 7.Ndf3 cxd4 
+ 1.e4 e6 2.d4 d5 3.Nd2 c5 4.exd5 Qxd5 5.Ngf3 cxd4 6.Bc4 Qd6 7.O-O Nf6 
+ 1.e4 c6 2.c4 d5 3.exd5 cxd5 4.cxd5 Nf6 5.Nc3 g6 6.Bc4 Bg7 7.Nf3 O-O 
+ 1.e4 c6 2.c4 d5 3.exd5 cxd5 4.cxd5 Nf6 5.Nc3 Nxd5 6.d4 Nc6 7.Nf3 e6 
+ 1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 a6 6.Bg5 e6 7.f4 Be7 
+(5 rows)
+
+Time: 0.335 ms
+Test 3.4: SELECT getFirstMoves(game, 15) FROM games;
+                             getfirstmoves                             
+-----------------------------------------------------------------------
+ 1.e4 e6 2.d4 d5 3.Nd2 Nf6 4.e5 Nfd7 5.f4 c5 6.c3 Nc6 7.Ndf3 cxd4 
+ 1.e4 e6 2.d4 d5 3.Nd2 c5 4.exd5 Qxd5 5.Ngf3 cxd4 6.Bc4 Qd6 7.O-O Nf6 
+ 1.e4 c6 2.c4 d5 3.exd5 cxd5 4.cxd5 Nf6 5.Nc3 g6 6.Bc4 Bg7 7.Nf3 O-O 
+ 1.e4 c6 2.c4 d5 3.exd5 cxd5 4.cxd5 Nf6 5.Nc3 Nxd5 6.d4 Nc6 7.Nf3 e6 
+ 1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 a6 6.Bg5 e6 7.f4 Be7 
+(5 rows)
+
+Time: 0.334 ms
+Test 3.5: SELECT getFirstMoves(game, 100) FROM games;
+                             getfirstmoves                             
+-----------------------------------------------------------------------
+ 1.e4 e6 2.d4 d5 3.Nd2 Nf6 4.e5 Nfd7 5.f4 c5 6.c3 Nc6 7.Ndf3 cxd4 
+ 1.e4 e6 2.d4 d5 3.Nd2 c5 4.exd5 Qxd5 5.Ngf3 cxd4 6.Bc4 Qd6 7.O-O Nf6 
+ 1.e4 c6 2.c4 d5 3.exd5 cxd5 4.cxd5 Nf6 5.Nc3 g6 6.Bc4 Bg7 7.Nf3 O-O 
+ 1.e4 c6 2.c4 d5 3.exd5 cxd5 4.cxd5 Nf6 5.Nc3 Nxd5 6.d4 Nc6 7.Nf3 e6 
+ 1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 a6 6.Bg5 e6 7.f4 Be7 
+(5 rows)
+
+Time: 0.404 ms
+Test 4: hasOpening
+Test 4.1: SELECT hasOpening(game, 1.e4 e6 2.d4 d5 3.Nd2 Nf6 4.e5 Nfd7 5.f4 c5 6.c3 Nc6 7.Ndf3 cxd4 ) FROM games;
+ hasopening 
+------------
+ t
+ f
+ f
+ f
+ f
+(5 rows)
+
+Time: 1.000 ms
+Test 4.2: SELECT hasOpening(game, 1.e4 c6 2.c4 d5 3.exd5 cxd5 4.cxd5 Nf6 5.Nc3 g6 6.Bc4 Bg7 7.Nf3 O-O ) FROM games;
+ hasopening 
+------------
+ f
+ f
+ t
+ f
+ f
+(5 rows)
+
+Time: 0.763 ms
+Test 4.3: SELECT hasOpening(game, 1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 a6 6.Bg5 e6 7.f4 Be7 ) FROM games;
+ hasopening 
+------------
+ f
+ f
+ f
+ f
+ t
+(5 rows)
+
+Time: 0.453 ms
+Test 4.4: SELECT hasOpening(game, 1.e1 c1) FROM games;
+ hasopening 
+------------
+ f
+ f
+ f
+ f
+ f
+(5 rows)
+
+Time: 0.184 ms
+Test 4.5: SELECT hasOpening(game, 1.e4 ) FROM games;
+ hasopening 
+------------
+ t
+ t
+ t
+ t
+ t
+(5 rows)
+
+Time: 0.175 ms
+Test 5: hasBoard
+Test 5.1: SELECT hasBoard(game, rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1, 0) FROM games;
+ hasboard 
+----------
+ t
+ t
+ t
+ t
+ t
+(5 rows)
+
+Time: 0.386 ms
+Test 5.2: SELECT hasBoard(game, rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1, 1) FROM games;
+ hasboard 
+----------
+ t
+ t
+ t
+ t
+ t
+(5 rows)
+
+Time: 0.454 ms
+Test 5.3: SELECT hasBoard(game, rnbqkbnr/pp2pppp/8/3P4/8/8/PP1P1PPP/RNBQKBNR b KQkq - 0 4, 7) FROM games;
+ hasboard 
+----------
+ f
+ f
+ t
+ t
+ f
+(5 rows)
+
+Time: 1.289 ms
+Test 5.4: SELECT hasBoard(game, rnbqk2r/1p2bppp/p2ppn2/6B1/3NPP2/2N5/PPP3PP/R2QKB1R w KQkq - 1 8, 14) FROM games;
+ hasboard 
+----------
+ f
+ f
+ f
+ f
+ t
+(5 rows)
+
+Time: 2.146 ms
+Test 5.5: SELECT hasBoard(game, rnbqk2r/1p2bppp/p2ppn2/6B1/3NPP2/2N5/PPP3PP/R2QKB1R w KQkq - 1 8, 15) FROM games;
+ hasboard 
+----------
+ f
+ f
+ f
+ f
+ t
+(5 rows)
+
+Time: 3.414 ms
+Test 6: hasOpening and hasBoard
+Test 6.1: without btree index
+ count 
+-------
+     5
+(1 row)
+
+Time: 0.679 ms
+Test 6.2: with btree index
+SET
+Time: 0.118 ms
+CREATE INDEX
+Time: 5.128 ms
+VACUUM
+Time: 2.522 ms
+                                                              QUERY PLAN                                                               
+---------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=9.46..9.47 rows=1 width=8) (actual time=0.191..0.191 rows=1 loops=1)
+   ->  Index Only Scan using games_game_btree_idx on games  (cost=0.13..9.46 rows=2 width=0) (actual time=0.109..0.188 rows=2 loops=1)
+         Filter: hasopening(game, '1.e4 c6 2.c4 d5 3.exd5 cxd5 '::chessgame)
+         Rows Removed by Filter: 3
+         Heap Fetches: 0
+ Planning Time: 0.106 ms
+ Execution Time: 0.214 ms
+(7 rows)
+
+Time: 0.613 ms
+DROP INDEX
+Time: 1.729 ms
+SET
+Time: 0.101 ms
+Test 7: hasBoard
+Test 7.1: without gin index
+                                                 QUERY PLAN                                                 
+------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=1.07..1.08 rows=1 width=8) (actual time=0.242..0.242 rows=1 loops=1)
+   ->  Seq Scan on games  (cost=0.00..1.06 rows=2 width=0) (actual time=0.061..0.238 rows=5 loops=1)
+         Filter: hasboard(game, 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'::chessboard, 10)
+ Planning Time: 0.063 ms
+ Execution Time: 0.259 ms
+(5 rows)
+
+Time: 0.539 ms
+Test 7.2: with gin index
+SET
+Time: 0.079 ms
+CREATE INDEX
+Time: 2.934 ms
+VACUUM
+Time: 2.685 ms
+                                                        QUERY PLAN                                                         
+---------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=10000000001.07..10000000001.08 rows=1 width=8) (actual time=84.316..84.317 rows=1 loops=1)
+   ->  Seq Scan on games  (cost=10000000000.00..10000000001.06 rows=2 width=0) (actual time=84.088..84.296 rows=5 loops=1)
+         Filter: hasboard(game, 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'::chessboard, 10)
+ Planning Time: 0.079 ms
+ JIT:
+   Functions: 4
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.271 ms, Inlining 54.580 ms, Optimization 19.180 ms, Emission 10.250 ms, Total 84.281 ms
+ Execution Time: 97.186 ms
+(9 rows)
+
+Time: 97.645 ms
+SET
+Time: 0.142 ms
+Test 8: Display chessgame and chessboards
+SELECT 5
+Time: 7.059 ms
+                                     jsonb_pretty                                     
+--------------------------------------------------------------------------------------
+ {                                                                                   +
+     "game": "1.e4 e6 2.d4 d5 3.Nd2 Nf6 4.e5 Nfd7 5.f4 c5 6.c3 Nc6 7.Ndf3 cxd4 ",    +
+     "chessboards": [                                                                +
+         "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",                 +
+         "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1",              +
+         "rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2",             +
+         "rnbqkbnr/pppp1ppp/4p3/8/3PP3/8/PPP2PPP/RNBQKBNR b KQkq d3 0 2",            +
+         "rnbqkbnr/ppp2ppp/4p3/3p4/3PP3/8/PPP2PPP/RNBQKBNR w KQkq d6 0 3",           +
+         "rnbqkbnr/ppp2ppp/4p3/3p4/3PP3/8/PPPN1PPP/R1BQKBNR b KQkq - 1 3",           +
+         "rnbqkb1r/ppp2ppp/4pn2/3p4/3PP3/8/PPPN1PPP/R1BQKBNR w KQkq - 2 4",          +
+         "rnbqkb1r/ppp2ppp/4pn2/3pP3/3P4/8/PPPN1PPP/R1BQKBNR b KQkq - 0 4",          +
+         "rnbqkb1r/pppn1ppp/4p3/3pP3/3P4/8/PPPN1PPP/R1BQKBNR w KQkq - 1 5",          +
+         "rnbqkb1r/pppn1ppp/4p3/3pP3/3P1P2/8/PPPN2PP/R1BQKBNR b KQkq f3 0 5",        +
+         "rnbqkb1r/pp1n1ppp/4p3/2ppP3/3P1P2/8/PPPN2PP/R1BQKBNR w KQkq c6 0 6",       +
+         "rnbqkb1r/pp1n1ppp/4p3/2ppP3/3P1P2/2P5/PP1N2PP/R1BQKBNR b KQkq - 0 6",      +
+         "r1bqkb1r/pp1n1ppp/2n1p3/2ppP3/3P1P2/2P5/PP1N2PP/R1BQKBNR w KQkq - 1 7",    +
+         "r1bqkb1r/pp1n1ppp/2n1p3/2ppP3/3P1P2/2P2N2/PP4PP/R1BQKBNR b KQkq - 2 7",    +
+         "r1bqkb1r/pp1n1ppp/2n1p3/3pP3/3p1P2/2P2N2/PP4PP/R1BQKBNR w KQkq - 0 8"      +
+     ]                                                                               +
+ }
+ {                                                                                   +
+     "game": "1.e4 e6 2.d4 d5 3.Nd2 c5 4.exd5 Qxd5 5.Ngf3 cxd4 6.Bc4 Qd6 7.O-O Nf6 ",+
+     "chessboards": [                                                                +
+         "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",                 +
+         "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1",              +
+         "rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2",             +
+         "rnbqkbnr/pppp1ppp/4p3/8/3PP3/8/PPP2PPP/RNBQKBNR b KQkq d3 0 2",            +
+         "rnbqkbnr/ppp2ppp/4p3/3p4/3PP3/8/PPP2PPP/RNBQKBNR w KQkq d6 0 3",           +
+         "rnbqkbnr/ppp2ppp/4p3/3p4/3PP3/8/PPPN1PPP/R1BQKBNR b KQkq - 1 3",           +
+         "rnbqkbnr/pp3ppp/4p3/2pp4/3PP3/8/PPPN1PPP/R1BQKBNR w KQkq c6 0 4",          +
+         "rnbqkbnr/pp3ppp/4p3/2pP4/3P4/8/PPPN1PPP/R1BQKBNR b KQkq - 0 4",            +
+         "rnb1kbnr/pp3ppp/4p3/2pq4/3P4/8/PPPN1PPP/R1BQKBNR w KQkq - 0 5",            +
+         "rnb1kbnr/pp3ppp/4p3/2pq4/3P4/5N2/PPPN1PPP/R1BQKB1R b KQkq - 1 5",          +
+         "rnb1kbnr/pp3ppp/4p3/3q4/3p4/5N2/PPPN1PPP/R1BQKB1R w KQkq - 0 6",           +
+         "rnb1kbnr/pp3ppp/4p3/3q4/2Bp4/5N2/PPPN1PPP/R1BQK2R b KQkq - 1 6",           +
+         "rnb1kbnr/pp3ppp/3qp3/8/2Bp4/5N2/PPPN1PPP/R1BQK2R w KQkq - 2 7",            +
+         "rnb1kbnr/pp3ppp/3qp3/8/2Bp4/5N2/PPPN1PPP/R1BQ1RK1 b kq - 3 7",             +
+         "rnb1kb1r/pp3ppp/3qpn2/8/2Bp4/5N2/PPPN1PPP/R1BQ1RK1 w kq - 4 8"             +
+     ]                                                                               +
+ }
+ {                                                                                   +
+     "game": "1.e4 c6 2.c4 d5 3.exd5 cxd5 4.cxd5 Nf6 5.Nc3 g6 6.Bc4 Bg7 7.Nf3 O-O ", +
+     "chessboards": [                                                                +
+         "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",                 +
+         "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1",              +
+         "rnbqkbnr/pp1ppppp/2p5/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2",             +
+         "rnbqkbnr/pp1ppppp/2p5/8/2P1P3/8/PP1P1PPP/RNBQKBNR b KQkq c3 0 2",          +
+         "rnbqkbnr/pp2pppp/2p5/3p4/2P1P3/8/PP1P1PPP/RNBQKBNR w KQkq d6 0 3",         +
+         "rnbqkbnr/pp2pppp/2p5/3P4/2P5/8/PP1P1PPP/RNBQKBNR b KQkq - 0 3",            +
+         "rnbqkbnr/pp2pppp/8/3p4/2P5/8/PP1P1PPP/RNBQKBNR w KQkq - 0 4",              +
+         "rnbqkbnr/pp2pppp/8/3P4/8/8/PP1P1PPP/RNBQKBNR b KQkq - 0 4",                +
+         "rnbqkb1r/pp2pppp/5n2/3P4/8/8/PP1P1PPP/RNBQKBNR w KQkq - 1 5",              +
+         "rnbqkb1r/pp2pppp/5n2/3P4/8/2N5/PP1P1PPP/R1BQKBNR b KQkq - 2 5",            +
+         "rnbqkb1r/pp2pp1p/5np1/3P4/8/2N5/PP1P1PPP/R1BQKBNR w KQkq - 0 6",           +
+         "rnbqkb1r/pp2pp1p/5np1/3P4/2B5/2N5/PP1P1PPP/R1BQK1NR b KQkq - 1 6",         +
+         "rnbqk2r/pp2ppbp/5np1/3P4/2B5/2N5/PP1P1PPP/R1BQK1NR w KQkq - 2 7",          +
+         "rnbqk2r/pp2ppbp/5np1/3P4/2B5/2N2N2/PP1P1PPP/R1BQK2R b KQkq - 3 7",         +
+         "rnbq1rk1/pp2ppbp/5np1/3P4/2B5/2N2N2/PP1P1PPP/R1BQK2R w KQ - 4 8"           +
+     ]                                                                               +
+ }
+ {                                                                                   +
+     "game": "1.e4 c6 2.c4 d5 3.exd5 cxd5 4.cxd5 Nf6 5.Nc3 Nxd5 6.d4 Nc6 7.Nf3 e6 ", +
+     "chessboards": [                                                                +
+         "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",                 +
+         "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1",              +
+         "rnbqkbnr/pp1ppppp/2p5/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2",             +
+         "rnbqkbnr/pp1ppppp/2p5/8/2P1P3/8/PP1P1PPP/RNBQKBNR b KQkq c3 0 2",          +
+         "rnbqkbnr/pp2pppp/2p5/3p4/2P1P3/8/PP1P1PPP/RNBQKBNR w KQkq d6 0 3",         +
+         "rnbqkbnr/pp2pppp/2p5/3P4/2P5/8/PP1P1PPP/RNBQKBNR b KQkq - 0 3",            +
+         "rnbqkbnr/pp2pppp/8/3p4/2P5/8/PP1P1PPP/RNBQKBNR w KQkq - 0 4",              +
+         "rnbqkbnr/pp2pppp/8/3P4/8/8/PP1P1PPP/RNBQKBNR b KQkq - 0 4",                +
+         "rnbqkb1r/pp2pppp/5n2/3P4/8/8/PP1P1PPP/RNBQKBNR w KQkq - 1 5",              +
+         "rnbqkb1r/pp2pppp/5n2/3P4/8/2N5/PP1P1PPP/R1BQKBNR b KQkq - 2 5",            +
+         "rnbqkb1r/pp2pppp/8/3n4/8/2N5/PP1P1PPP/R1BQKBNR w KQkq - 0 6",              +
+         "rnbqkb1r/pp2pppp/8/3n4/3P4/2N5/PP3PPP/R1BQKBNR b KQkq d3 0 6",             +
+         "r1bqkb1r/pp2pppp/2n5/3n4/3P4/2N5/PP3PPP/R1BQKBNR w KQkq - 1 7",            +
+         "r1bqkb1r/pp2pppp/2n5/3n4/3P4/2N2N2/PP3PPP/R1BQKB1R b KQkq - 2 7",          +
+         "r1bqkb1r/pp3ppp/2n1p3/3n4/3P4/2N2N2/PP3PPP/R1BQKB1R w KQkq - 0 8"          +
+     ]                                                                               +
+ }
+ {                                                                                   +
+     "game": "1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 a6 6.Bg5 e6 7.f4 Be7 ",    +
+     "chessboards": [                                                                +
+         "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",                 +
+         "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1",              +
+         "rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2",            +
+         "rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2",           +
+         "rnbqkbnr/pp2pppp/3p4/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 0 3",          +
+         "rnbqkbnr/pp2pppp/3p4/2p5/3PP3/5N2/PPP2PPP/RNBQKB1R b KQkq d3 0 3",         +
+         "rnbqkbnr/pp2pppp/3p4/8/3pP3/5N2/PPP2PPP/RNBQKB1R w KQkq - 0 4",            +
+         "rnbqkbnr/pp2pppp/3p4/8/3NP3/8/PPP2PPP/RNBQKB1R b KQkq - 0 4",              +
+         "rnbqkb1r/pp2pppp/3p1n2/8/3NP3/8/PPP2PPP/RNBQKB1R w KQkq - 1 5",            +
+         "rnbqkb1r/pp2pppp/3p1n2/8/3NP3/2N5/PPP2PPP/R1BQKB1R b KQkq - 2 5",          +
+         "rnbqkb1r/1p2pppp/p2p1n2/8/3NP3/2N5/PPP2PPP/R1BQKB1R w KQkq - 0 6",         +
+         "rnbqkb1r/1p2pppp/p2p1n2/6B1/3NP3/2N5/PPP2PPP/R2QKB1R b KQkq - 1 6",        +
+         "rnbqkb1r/1p3ppp/p2ppn2/6B1/3NP3/2N5/PPP2PPP/R2QKB1R w KQkq - 0 7",         +
+         "rnbqkb1r/1p3ppp/p2ppn2/6B1/3NPP2/2N5/PPP3PP/R2QKB1R b KQkq f3 0 7",        +
+         "rnbqk2r/1p2bppp/p2ppn2/6B1/3NPP2/2N5/PPP3PP/R2QKB1R w KQkq - 1 8"          +
+     ]                                                                               +
+ }
+(5 rows)
+
+Time: 0.574 ms

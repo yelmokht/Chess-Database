@@ -140,7 +140,7 @@ chessgame_to_chessboard(chessgame_t *chessgame, uint16_t number_half_moves)
   * @param number_half_moves Number of half-moves
   * @return *chessgame_t Pointer to the new truncated chessgame
 */
-static chessgame_t * 
+chessgame_t * 
 truncate_chessgame(chessgame_t *chessgame, uint16_t number_half_moves)
 {
   char delimeter = ' ';
@@ -222,8 +222,13 @@ chessgame_contains_chessboard(chessgame_t *chessgame, chessboard_t *chessboard, 
   return false;
 }
 
+/**
+ * @brief Returns the number of half-moves in a chessgame.
+ * @param chessgame Pointer to the chessgame
+ * @return int Number of half-moves
+*/
 int
-chessgame_to_number_internal(chessgame_t *chessgame)
+chessgame_to_number(chessgame_t *chessgame)
 {
   SCL_Record record;
   SCL_recordInit(record);
@@ -231,11 +236,16 @@ chessgame_to_number_internal(chessgame_t *chessgame)
   return SCL_recordLength(record);
 }
 
+/**
+ * @brief Returns an array of chessboards from a chessgame.
+ * @param chessgame Pointer to the chessgame
+ * @return *ArrayType Pointer to the array of chessboards
+*/
 static ArrayType *
 chessgame_to_chessboards_internal(chessgame_t *chessgame)
 {
-  uint16_t number_half_moves = chessgame_to_number_internal(chessgame);
-  chessboard_t **chessboards = (chessboard_t **) palloc(sizeof(chessboard_t *) * (number_half_moves + 1)); // +1 for the initial board
+  uint16_t number_half_moves = chessgame_to_number(chessgame) + 1; // +1 for the initial board
+  chessboard_t **chessboards = (chessboard_t **) palloc(sizeof(chessboard_t *) * (number_half_moves));
   SCL_Record record;
   SCL_Board board;
   SCL_recordInit(record);
@@ -257,11 +267,31 @@ chessgame_to_chessboards_internal(chessgame_t *chessgame)
   return construct_array((Datum *) chessboards, number_half_moves, chessboard_oid, -1, false, 'i');
 }
 
-chessgame_t *
-chessgame_truncated_internal(chessgame_t *chessgame, uint16_t number_half_moves)
+static ArrayType *
+chessgame_to_chessboards_truncated_internal(chessgame_t *chessgame, uint16_t number_half_moves)
 {
-  return truncate_chessgame(chessgame, number_half_moves);
+  chessboard_t **chessboards = (chessboard_t **) palloc(sizeof(chessboard_t *) * (number_half_moves + 1)); // +1 for the initial board
+  SCL_Record record;
+  SCL_Board board;
+  SCL_recordInit(record);
+  SCL_boardInit(board);
+  SCL_recordFromPGN(record, chessgame->pgn);
+  
+  for (uint16_t i = 0; i < number_half_moves + 1; i++) {
+    uint8_t s0, s1;
+    char p;
+    char *fen = (char *) malloc(sizeof(char) * SCL_FEN_MAX_LENGTH);
+    SCL_boardToFEN(board, fen);
+    chessboards[i] = FEN_to_chessboard(fen);
+    SCL_recordGetMove(record,i,&s0,&s1,&p);
+    SCL_boardMakeMove(board,s0,s1,p);
+    free(fen);
+  }
+
+  Oid chessboard_oid = TypenameGetTypid("chessboard");
+  return construct_array((Datum *) chessboards, number_half_moves, chessboard_oid, -1, false, 'i');
 }
+
 
 /******************************************************************************
  * Input/output for chessgame data type
@@ -415,8 +445,8 @@ chessgame_truncated(PG_FUNCTION_ARGS)
 {
   chessgame_t *chessgame_1= PG_GETARG_CHESSGAME_P(0);
   chessgame_t *chessgame_2 = PG_GETARG_CHESSGAME_P(1);
-  int number = chessgame_to_number_internal(chessgame_2);
-  PG_RETURN_CHESSGAME_P(chessgame_truncated_internal(chessgame_1, number));
+  int number = chessgame_to_number(chessgame_2);
+  PG_RETURN_CHESSGAME_P(truncate_chessgame(chessgame_1, number));
 }
 
 PG_FUNCTION_INFO_V1(chessgame_to_chessboards);
@@ -425,6 +455,16 @@ chessgame_to_chessboards(PG_FUNCTION_ARGS)
 {
   chessgame_t *chessgame = PG_GETARG_CHESSGAME_P(0);
   ArrayType *array = chessgame_to_chessboards_internal(chessgame);
+  PG_RETURN_ARRAYTYPE_P(array);
+}
+
+PG_FUNCTION_INFO_V1(chessgame_to_chessboards_truncated);
+Datum
+chessgame_to_chessboards_truncated(PG_FUNCTION_ARGS)
+{
+  chessgame_t *chessgame = PG_GETARG_CHESSGAME_P(0);
+  int number_of_half_moves = PG_GETARG_INT16(1);
+  ArrayType *array = chessgame_to_chessboards_truncated_internal(chessgame, number_of_half_moves);
   PG_RETURN_ARRAYTYPE_P(array);
 }
 
@@ -473,6 +513,17 @@ getFirstMoves(PG_FUNCTION_ARGS)
   * @param chessgame Pointer to the second chessgame
   * @return bool True if the first chessgame starts with the exact same set of moves as the second chessgame
 */
+PG_FUNCTION_INFO_V1(hasOpening);
+Datum
+hasOpening(PG_FUNCTION_ARGS)
+{
+  chessgame_t *chessgame_1 = PG_GETARG_CHESSGAME_P(0);
+  chessgame_t *chessgame_2 = PG_GETARG_CHESSGAME_P(1);
+  bool hasOpening = compare_moves(chessgame_1, chessgame_2);
+  PG_FREE_IF_COPY(chessgame_1, 0);
+  PG_FREE_IF_COPY(chessgame_2, 1);
+  PG_RETURN_BOOL(hasOpening);
+}
 
 /**
   * @brief Returns true if the chessgame contains the given board state in its first N half-moves.
@@ -482,3 +533,15 @@ getFirstMoves(PG_FUNCTION_ARGS)
   * @param number_half_moves Number of half-moves
   * @return bool True if the chessgame contains the given board state in its first N half-moves
 */
+PG_FUNCTION_INFO_V1(hasBoard);
+Datum
+hasBoard(PG_FUNCTION_ARGS)
+{
+  chessgame_t *chessgame = PG_GETARG_CHESSGAME_P(0);
+  chessboard_t *chessboard = PG_GETARG_CHESSBOARD_P(1);
+  uint16_t number_half_moves = PG_GETARG_INT16(2);
+  bool hasBoard = chessgame_contains_chessboard(chessgame, chessboard, number_half_moves);
+  PG_FREE_IF_COPY(chessgame, 0);
+  PG_FREE_IF_COPY(chessboard, 1);
+  PG_RETURN_BOOL(hasBoard);
+}

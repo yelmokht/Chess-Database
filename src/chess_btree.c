@@ -16,7 +16,7 @@
 ******************************************************************************/
 
 static int
-chess_opening_cmp_internal(chessgame_t *a, chessgame_t *b)
+chessgame_cmp_internal(chessgame_t *a, chessgame_t *b)
 {
   int cmp_result = strcmp(opening(a), opening(b));
   if (cmp_result < 0)
@@ -30,98 +30,99 @@ chess_opening_cmp_internal(chessgame_t *a, chessgame_t *b)
   return 0;
 }
 
-PG_FUNCTION_INFO_V1(chess_opening_lt);
+PG_FUNCTION_INFO_V1(chessgame_lt);
 Datum
-chess_opening_lt(PG_FUNCTION_ARGS)
+chessgame_lt(PG_FUNCTION_ARGS)
 {
   chessgame_t *c = PG_GETARG_CHESSGAME_P(0);
   chessgame_t *d = PG_GETARG_CHESSGAME_P(1);
-  bool result = chess_opening_cmp_internal(c, d) < 0;
+  bool result = chessgame_cmp_internal(c, d) < 0;
   PG_FREE_IF_COPY(c, 0);
   PG_FREE_IF_COPY(d, 1);
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(chess_opening_le);
+PG_FUNCTION_INFO_V1(chessgame_le);
 Datum
-chess_opening_le(PG_FUNCTION_ARGS)
+chessgame_le(PG_FUNCTION_ARGS)
 {
   chessgame_t *c = PG_GETARG_CHESSGAME_P(0);
   chessgame_t *d = PG_GETARG_CHESSGAME_P(1);
-  bool result = chess_opening_cmp_internal(c, d) <= 0;
+  bool result = chessgame_cmp_internal(c, d) <= 0;
   PG_FREE_IF_COPY(c, 0);
   PG_FREE_IF_COPY(d, 1);
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(chess_opening_eq);
+PG_FUNCTION_INFO_V1(chessgame_eq);
 Datum
-chess_opening_eq(PG_FUNCTION_ARGS)
+chessgame_eq(PG_FUNCTION_ARGS)
 {
   chessgame_t *c = PG_GETARG_CHESSGAME_P(0);
   chessgame_t *d = PG_GETARG_CHESSGAME_P(1);
-  bool result = chess_opening_cmp_internal(c, d) == 0;
+  bool result = chessgame_cmp_internal(c, d) == 0;
   PG_FREE_IF_COPY(c, 0);
   PG_FREE_IF_COPY(d, 1);
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(chess_opening_ne);
+PG_FUNCTION_INFO_V1(chessgame_ne);
 Datum
-chess_opening_ne(PG_FUNCTION_ARGS)
+chessgame_ne(PG_FUNCTION_ARGS)
 {
   chessgame_t *c = PG_GETARG_CHESSGAME_P(0);
   chessgame_t *d = PG_GETARG_CHESSGAME_P(1);
-  bool result = chess_opening_cmp_internal(c, d) != 0;
+  bool result = chessgame_cmp_internal(c, d) != 0;
   PG_FREE_IF_COPY(c, 0);
   PG_FREE_IF_COPY(d, 1);
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(chess_opening_ge);
+PG_FUNCTION_INFO_V1(chessgame_ge);
 Datum
-chess_opening_ge(PG_FUNCTION_ARGS)
+chessgame_ge(PG_FUNCTION_ARGS)
 {
   chessgame_t *c = PG_GETARG_CHESSGAME_P(0);
   chessgame_t *d = PG_GETARG_CHESSGAME_P(1);
-  bool result = chess_opening_cmp_internal(c, d) >= 0;
+  bool result = chessgame_cmp_internal(c, d) >= 0;
   PG_FREE_IF_COPY(c, 0);
   PG_FREE_IF_COPY(d, 1);
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(chess_opening_gt);
+PG_FUNCTION_INFO_V1(chessgame_gt);
 Datum
-chess_opening_gt(PG_FUNCTION_ARGS)
+chessgame_gt(PG_FUNCTION_ARGS)
 {
   chessgame_t *c = PG_GETARG_CHESSGAME_P(0);
   chessgame_t *d = PG_GETARG_CHESSGAME_P(1);
-  bool result = chess_opening_cmp_internal(c, d) > 0;
+  bool result = chessgame_cmp_internal(c, d) > 0;
   PG_FREE_IF_COPY(c, 0);
   PG_FREE_IF_COPY(d, 1);
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(chess_opening_like);
+PG_FUNCTION_INFO_V1(chessgame_like);
 Datum
-chess_opening_like(PG_FUNCTION_ARGS)
+chessgame_like(PG_FUNCTION_ARGS)
 {
   chessgame_t *c = PG_GETARG_CHESSGAME_P(0);
   chessgame_t *d = PG_GETARG_CHESSGAME_P(1);
-
-  bool result = chess_opening_cmp_internal(chessgame_truncated_internal(c, chessgame_to_number_internal(d)), d) == 0;
+  int number_half_moves = chessgame_to_number(d);
+  chessgame_t *e = truncate_chessgame(c, number_half_moves);
+  bool result = chessgame_cmp_internal(e, d) == 0;
   PG_FREE_IF_COPY(c, 0);
   PG_FREE_IF_COPY(d, 1);
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(chess_opening_cmp);
+PG_FUNCTION_INFO_V1(chessgame_cmp);
 Datum
-chess_opening_cmp(PG_FUNCTION_ARGS)
+chessgame_cmp(PG_FUNCTION_ARGS)
 {
   chessgame_t *c = PG_GETARG_CHESSGAME_P(0);
   chessgame_t *d = PG_GETARG_CHESSGAME_P(1);
-  int result = chess_opening_cmp_internal(c, d);
+  int result = chessgame_cmp_internal(c, d);
   PG_FREE_IF_COPY(c, 0);
   PG_FREE_IF_COPY(d, 1);
   PG_RETURN_INT32(result);

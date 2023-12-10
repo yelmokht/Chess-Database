@@ -25,6 +25,7 @@
         "array.h": "c",
         "namespace.h": "c",
         "lock.h": "c",
-        "primnodes.h": "c"
+        "primnodes.h": "c",
+        "array": "c"
     }
 }
