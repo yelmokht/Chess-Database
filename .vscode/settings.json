@@ -1,0 +1,31 @@
+{
+    "C_Cpp.errorSquiggles": "enabled",
+    "files.associations": {
+        "stdlib.h": "c",
+        "float.h": "c",
+        "chess.h": "c",
+        "postgres.h": "c",
+        "builtins.h": "c",
+        "math.h": "c",
+        "stdio.h": "c",
+        "smallchesslib.h": "c",
+        "pqformat.h": "c",
+        "compare": "c",
+        "cstdint": "c",
+        "stdint.h": "c",
+        "memutils.h": "c",
+        "string_view": "c",
+        "varatt.h": "c",
+        "functional": "c",
+        "random": "c",
+        "stratnum.h": "c",
+        "gin.h": "c",
+        "pg_type.h": "c",
+        "objectaddress.h": "c",
+        "array.h": "c",
+        "namespace.h": "c",
+        "lock.h": "c",
+        "primnodes.h": "c",
+        "array": "c"
+    }
+}

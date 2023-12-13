@@ -1,272 +1,326 @@
 -- complain if script is sourced in psql, rather than via CREATE EXTENSION
-\echo Use "CREATE EXTENSION complex" to load this file. \quit
+\echo Use "CREATE EXTENSION chess" to load this file. \quit
 
 /******************************************************************************
- * Input/Output
- ******************************************************************************/
+ * Input/Output for chessgame
+******************************************************************************/
 
-CREATE OR REPLACE FUNCTION complex_in(cstring)
-  RETURNS complex
+CREATE OR REPLACE FUNCTION chessgame_in(cstring)
+  RETURNS chessgame
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION complex_out(complex)
+CREATE OR REPLACE FUNCTION chessgame_out(chessgame)
   RETURNS cstring
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION complex_recv(internal)
-  RETURNS complex
+CREATE OR REPLACE FUNCTION chessgame_recv(internal)
+  RETURNS chessgame
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION complex_send(complex)
+CREATE OR REPLACE FUNCTION chessgame_send(chessgame)
   RETURNS bytea
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE TYPE complex (
-  internallength = 16,
-  input          = complex_in,
-  output         = complex_out,
-  receive        = complex_recv,
-  send           = complex_send,
-  alignment      = double
+CREATE TYPE chessgame (
+  internallength = variable,
+  input          = chessgame_in,
+  output         = chessgame_out,
+  receive        = chessgame_recv,
+  send           = chessgame_send
 );
 
-CREATE OR REPLACE FUNCTION complex(text)
-  RETURNS complex
-  AS 'MODULE_PATHNAME', 'complex_cast_from_text'
+CREATE OR REPLACE FUNCTION chessgame(text)
+  RETURNS chessgame
+  AS 'MODULE_PATHNAME', 'chessgame_cast_from_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION text(complex)
+CREATE OR REPLACE FUNCTION text(chessgame)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'complex_cast_to_text'
+  AS 'MODULE_PATHNAME', 'chessgame_cast_to_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE CAST (text as complex) WITH FUNCTION complex(text) AS IMPLICIT;
-CREATE CAST (complex as text) WITH FUNCTION text(complex);
+CREATE CAST (text as chessgame) WITH FUNCTION chessgame(text) AS IMPLICIT;
+CREATE CAST (chessgame as text) WITH FUNCTION text(chessgame);
 
 /******************************************************************************
- * Constructor
- ******************************************************************************/
+ * Input/Output for chessboard
+******************************************************************************/
 
-CREATE FUNCTION complex(double precision, double precision)
-  RETURNS complex
-  AS 'MODULE_PATHNAME', 'complex_constructor'
+CREATE OR REPLACE FUNCTION chessboard_in(cstring)
+  RETURNS chessboard
+  AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/*****************************************************************************
- * Accessing values
- *****************************************************************************/
-
-CREATE FUNCTION re(complex)
-  RETURNS double precision
-  AS 'MODULE_PATHNAME', 'complex_re'
+CREATE OR REPLACE FUNCTION chessboard_out(chessboard)
+  RETURNS cstring
+  AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION im(complex)
-  RETURNS double precision
-  AS 'MODULE_PATHNAME', 'complex_im'
+CREATE OR REPLACE FUNCTION chessboard_recv(internal)
+  RETURNS chessboard
+  AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION conjugate(complex)
-  RETURNS complex
-  AS 'MODULE_PATHNAME', 'complex_conj'
+CREATE OR REPLACE FUNCTION chessboard_send(chessboard)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE TYPE chessboard (
+  internallength = variable,
+  input          = chessboard_in,
+  output         = chessboard_out,
+  receive        = chessboard_recv,
+  send           = chessboard_send
+);
+
+CREATE OR REPLACE FUNCTION chessboard(text)
+  RETURNS chessboard
+  AS 'MODULE_PATHNAME', 'chessboard_cast_from_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION text(chessboard)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'chessboard_cast_to_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (text as chessboard) WITH FUNCTION chessboard(text) AS IMPLICIT;
+CREATE CAST (chessboard as text) WITH FUNCTION text(chessboard);
+
+/******************************************************************************
+ * Constructors
+******************************************************************************/
+
+CREATE FUNCTION chessgame(cstring)
+  RETURNS chessgame
+  AS 'MODULE_PATHNAME', 'chessgame_constructor'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION chessboard(cstring)
+  RETURNS chessboard
+  AS 'MODULE_PATHNAME', 'chessboard_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * Operators
- ******************************************************************************/
+ * Function for indexing
+******************************************************************************/
 
-CREATE FUNCTION complex_eq(complex, complex)
+CREATE FUNCTION chessgame_to_chessboards(chessgame)
+  RETURNS _chessboard
+  AS 'MODULE_PATHNAME', 'chessgame_to_chessboards'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION chessgame_to_chessboards_truncated(chessgame, integer)
+  RETURNS _chessboard
+  AS 'MODULE_PATHNAME', 'chessgame_to_chessboards_truncated'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+/******************************************************************************
+ * Functions and predicates
+******************************************************************************/
+
+CREATE FUNCTION getBoard(chessgame, integer)
+  RETURNS chessboard
+  AS 'MODULE_PATHNAME', 'getBoard'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION getFirstMoves(chessgame, integer)
+  RETURNS chessgame
+  AS 'MODULE_PATHNAME', 'getFirstMoves'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION hasOpening(chessgame, chessgame)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'complex_eq'
+  AS 'MODULE_PATHNAME', 'hasOpening'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION complex_ne(complex, complex)
+
+CREATE OR REPLACE FUNCTION hasOpening2(a chessgame, b chessgame)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'complex_ne'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION complex_left(complex, complex)
+  AS $$
+    SELECT a LIKE b;
+  $$ IMMUTABLE LANGUAGE sql;
+
+
+CREATE FUNCTION hasBoard(chessgame, chessboard, integer)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'complex_left'
+  AS 'MODULE_PATHNAME', 'hasBoard'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION complex_right(complex, complex)
+
+CREATE FUNCTION hasBoard2(a chessgame, b chessboard, c integer)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'complex_right'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION complex_below(complex, complex)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'complex_below'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION complex_above(complex, complex)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'complex_above'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  AS $$
+    SELECT chessgame_to_chessboards(a) @> ARRAY[b];
+$$ IMMUTABLE LANGUAGE sql;
 
-CREATE OPERATOR ~= (
-  LEFTARG = complex, RIGHTARG = complex,
-  PROCEDURE = complex_eq,
-  COMMUTATOR = ~=, NEGATOR = <>
-);
-CREATE OPERATOR <> (
-  LEFTARG = complex, RIGHTARG = complex,
-  PROCEDURE = complex_ne,
-  COMMUTATOR = <>, NEGATOR = ~=
-);
-CREATE OPERATOR << (
-  LEFTARG = complex, RIGHTARG = complex,
-  PROCEDURE = complex_left,
-  COMMUTATOR = >>
-);
-CREATE OPERATOR >> (
-  LEFTARG = complex, RIGHTARG = complex,
-  PROCEDURE = complex_right,
-  COMMUTATOR = <<
-);
-CREATE OPERATOR <<| (
-  LEFTARG = complex, RIGHTARG = complex,
-  PROCEDURE = complex_below,
-  COMMUTATOR = |>>
-);
-CREATE OPERATOR |>> (
-  LEFTARG = complex, RIGHTARG = complex,
-  PROCEDURE = complex_above,
-  COMMUTATOR = <<|
-);
+/******************************************************************************
+ * B-Tree comparison functions
+******************************************************************************/
 
-/******************************************************************************/
-
-CREATE FUNCTION complex_add(complex, complex)
-  RETURNS complex
-  AS 'MODULE_PATHNAME', 'complex_add'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION complex_sub(complex, complex)
-  RETURNS complex
-  AS 'MODULE_PATHNAME', 'complex_sub'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION complex_mul(complex, complex)
-  RETURNS complex
-  AS 'MODULE_PATHNAME', 'complex_mul'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION complex_div(complex, complex)
-  RETURNS complex
-  AS 'MODULE_PATHNAME', 'complex_div'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR + (
-  LEFTARG = complex, RIGHTARG = complex,
-  PROCEDURE = complex_add,
-  COMMUTATOR = +
-);
-CREATE OPERATOR - (
-  LEFTARG = complex, RIGHTARG = complex,
-  PROCEDURE = complex_sub
-);
-CREATE OPERATOR * (
-  LEFTARG = complex, RIGHTARG = complex,
-  PROCEDURE = complex_mul,
-  COMMUTATOR = *
-);
-CREATE OPERATOR / (
-  LEFTARG = complex, RIGHTARG = complex,
-  PROCEDURE = complex_div
-);
-
-/******************************************************************************/
-
-CREATE FUNCTION complex_dist(complex, complex)
-  RETURNS double precision
-  AS 'MODULE_PATHNAME', 'complex_dist'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR <-> (
-  LEFTARG = complex, RIGHTARG = complex,
-  PROCEDURE = complex_dist,
-  COMMUTATOR = <->
-);
-
-/******************************************************************************/
-
-/* B-Tree comparison functions */
-
-CREATE OR REPLACE FUNCTION complex_abs_eq(complex, complex)
+CREATE OR REPLACE FUNCTION chessgame_eq(chessgame, chessgame)
   RETURNS boolean
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION complex_abs_lt(complex, complex)
+CREATE OR REPLACE FUNCTION chessgame_lt(chessgame, chessgame)
   RETURNS boolean
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION complex_abs_le(complex, complex)
+CREATE OR REPLACE FUNCTION chessgame_le(chessgame, chessgame)
   RETURNS boolean
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION complex_abs_gt(complex, complex)
+CREATE OR REPLACE FUNCTION chessgame_gt(chessgame, chessgame)
   RETURNS boolean
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION complex_abs_ge(complex, complex)
+CREATE OR REPLACE FUNCTION chessgame_ge(chessgame, chessgame)
   RETURNS boolean
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE OR REPLACE FUNCTION chessgame_like(chessgame, chessgame)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/******************************************************************************/
-
-/* B-Tree comparison operators */
+/******************************************************************************
+ * B-Tree comparison operators
+******************************************************************************/
 
 CREATE OPERATOR = (
-  LEFTARG = complex, RIGHTARG = complex,
-  PROCEDURE = complex_abs_eq,
+  LEFTARG = chessgame, RIGHTARG = chessgame,
+  PROCEDURE = chessgame_eq,
   COMMUTATOR = =, NEGATOR = <>
 );
 CREATE OPERATOR < (
-  LEFTARG = complex, RIGHTARG = complex,
-  PROCEDURE = complex_abs_lt,
+  LEFTARG = chessgame, RIGHTARG = chessgame,
+  PROCEDURE = chessgame_lt,
   COMMUTATOR = >, NEGATOR = >=
 );
 CREATE OPERATOR <= (
-  LEFTARG = complex, RIGHTARG = complex,
-  PROCEDURE = complex_abs_le,
+  LEFTARG = chessgame, RIGHTARG = chessgame,
+  PROCEDURE = chessgame_le,
   COMMUTATOR = >=, NEGATOR = >
 );
 CREATE OPERATOR >= (
-  LEFTARG = complex, RIGHTARG = complex,
-  PROCEDURE = complex_abs_ge,
+  LEFTARG = chessgame, RIGHTARG = chessgame,
+  PROCEDURE = chessgame_ge,
   COMMUTATOR = <=, NEGATOR = <
 );
 CREATE OPERATOR > (
-  LEFTARG = complex, RIGHTARG = complex,
-  PROCEDURE = complex_abs_gt,
+  LEFTARG = chessgame, RIGHTARG = chessgame,
+  PROCEDURE = chessgame_gt,
   COMMUTATOR = <, NEGATOR = <=
 );
 
-/******************************************************************************/
+CREATE OPERATOR ~~ (
+  LEFTARG = chessgame, RIGHTARG = chessgame,
+  PROCEDURE = chessgame_like,
+  COMMUTATOR = ~~, NEGATOR = !~~
+);
 
-/* B-Tree support function */
+/******************************************************************************
+ * B-Tree support function
+******************************************************************************/
 
-CREATE OR REPLACE FUNCTION complex_abs_cmp(complex, complex)
+CREATE OR REPLACE FUNCTION chessgame_cmp(chessgame, chessgame)
   RETURNS integer
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/******************************************************************************/
+/******************************************************************************
+ * B-Tree operator class
+******************************************************************************/
 
-/* B-Tree operator class */
-
-CREATE OPERATOR CLASS complex_abs_ops
-DEFAULT FOR TYPE complex USING btree
+CREATE OPERATOR CLASS chessgame_ops
+DEFAULT FOR TYPE chessgame USING btree
 AS
         OPERATOR        1       <  ,
         OPERATOR        2       <= ,
         OPERATOR        3       =  ,
         OPERATOR        4       >= ,
         OPERATOR        5       >  ,
-        FUNCTION        1       complex_abs_cmp(complex, complex);
+        FUNCTION        1       chessgame_cmp(chessgame, chessgame);
+
+/******************************************************************************
+ * GIN comparison functions
+******************************************************************************/
+
+CREATE OR REPLACE FUNCTION _chessboard_overlap(_chessboard, _chessboard)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION _chessboard_contains(_chessboard, _chessboard)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION _chessboard_contained(_chessboard, _chessboard)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION _chessboard_eq(_chessboard, _chessboard)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
+ * GIN comparison operators
+******************************************************************************/
+
+CREATE OPERATOR && (
+  LEFTARG = _chessboard, RIGHTARG = _chessboard,
+  PROCEDURE = _chessboard_overlap,
+  COMMUTATOR = &&
+);
+CREATE OPERATOR @> (
+  LEFTARG = _chessboard, RIGHTARG = _chessboard,
+  PROCEDURE = _chessboard_contains,
+  COMMUTATOR = <@
+);
+CREATE OPERATOR <@ (
+  LEFTARG = _chessboard, RIGHTARG = _chessboard,
+  PROCEDURE = _chessboard_contained,
+  COMMUTATOR = @>
+);
+CREATE OPERATOR = (
+  LEFTARG = _chessboard, RIGHTARG = _chessboard,
+  PROCEDURE = _chessboard_eq,
+  COMMUTATOR = =, NEGATOR = <>
+);
+
+/******************************************************************************
+ * GIN support function
+******************************************************************************/
+
+CREATE OR REPLACE FUNCTION chessboard_cmp(chessboard, chessboard)
+  RETURNS integer
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
+ * GIN operator class
+******************************************************************************/
+
+CREATE OPERATOR CLASS chess_board_ops
+DEFAULT FOR TYPE _chessboard USING gin
+AS
+    OPERATOR        1       && ,
+    OPERATOR        2       @> ,
+    OPERATOR        3       <@ ,
+    OPERATOR        4       =  ,
+    FUNCTION	      1	      chessboard_cmp (chessboard, chessboard),
+    FUNCTION	      2	      ginarrayextract (anyarray, internal, internal),
+    FUNCTION	      3	      ginqueryarrayextract (anyarray, internal, int2, internal, internal, internal, internal),
+    FUNCTION	      4	      ginarrayconsistent (internal, int2, anyarray, int4, internal, internal, internal, internal),
+    STORAGE                 chessboard;
 
 /******************************************************************************/

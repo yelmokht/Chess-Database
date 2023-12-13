@@ -1,0 +1,12 @@
+# Ignore compiled files
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+*.o
+*.so
+*.bc
+*.dll
