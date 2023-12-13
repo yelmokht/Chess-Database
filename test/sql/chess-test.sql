@@ -68,15 +68,17 @@ SELECT hasboard(game, 'rnbqk2r/1p2bppp/p2ppn2/6B1/3NPP2/2N5/PPP3PP/R2QKB1R w KQk
 \echo Test 5.5: SELECT hasboard(game, 'rnbqk2r/1p2bppp/p2ppn2/6B1/3NPP2/2N5/PPP3PP/R2QKB1R w KQkq - 1 8', 15) FROM games;
 SELECT hasboard(game, 'rnbqk2r/1p2bppp/p2ppn2/6B1/3NPP2/2N5/PPP3PP/R2QKB1R w KQkq - 1 8', 15) FROM games;
 
-\echo Test 6: hasOpening and hasboard
+\echo Test 6: hasOpening
 
 \echo Test 6.1: without btree index
-SELECT count(*) FROM games WHERE hasboard(game, 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', 10);
+EXPLAIN ANALYZE SELECT count(*) FROM games WHERE hasOpening(game, '1.e4 c6 2.c4 d5 3.exd5 cxd5 ');
 \echo Test 6.2: with btree index
 SET enable_seqscan = off;
 CREATE INDEX games_game_btree_idx ON games USING btree(game);
 VACUUM ANALYZE games;
 EXPLAIN ANALYZE SELECT count(*) FROM games WHERE hasOpening(game, '1.e4 c6 2.c4 d5 3.exd5 cxd5 ');
+\echo Test 6.3: with btree index and hasOpening2() function
+EXPLAIN ANALYZE SELECT count(*) FROM games WHERE hasOpening2(game, '1.e4 c6 2.c4 d5 3.exd5 cxd5 ');
 DROP INDEX games_game_btree_idx;
 SET enable_seqscan = on;
 
