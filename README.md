@@ -8,7 +8,7 @@ The goal of this project is to create a PostgreSQL extension for storing and ret
 - **FEN (Forsyth–Edwards Notation):** Stores board states.
 
 ## Installation
-Before installation, make sure these packages are nstalled on your device:
+Before installation, make sure these packages are installed on your device:
 
 ```bash
 sudo apt-get install postgresql-16
